@@ -10,7 +10,7 @@ for sensor in config.sensors:
         s = ReedSwitch(sensor.pin, sensor.topic, sensor.normally_closed)
 
     if s:
-        GPIO.add_event_detect(sensor.pin, GPIO.RISING, callback=s.callback)
+        GPIO.add_event_detect(sensor.pin, GPIO.RISING, callback=s.callback, bouncetime=500)
 
 while True:
     time.sleep(1)

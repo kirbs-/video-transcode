@@ -37,7 +37,7 @@ class ReedSwitch(object):
     def state(self):
         return GPIO.input(self.pin)
 
-    def payload(self):
+    def payload(self, args):
         return json.dumps({'state': self.state()})
 
     def callback(self):
