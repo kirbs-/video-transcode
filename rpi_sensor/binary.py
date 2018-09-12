@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-import mqtt
+import rpi_sensor.mqtt as mqtt
 import json
 
 
