@@ -1,0 +1,12 @@
+[Unit]
+Description=RPi Sensor Service
+After=network-online.target
+
+[Service]
+#replace user with an existing system user. Should be the same user from step 8.
+User=user
+# first part of ExecStart should point to the jupyterhub executable in the jupyter virtualenv.
+ExecStart=/usr/bin/python /usr/local/bin/rpi_sensor/event_loop.py
+
+[Install]
+WantedBy=multi-user.target
