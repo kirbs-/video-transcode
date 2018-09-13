@@ -3,9 +3,9 @@ Description=RPi Sensor Service
 After=network-online.target
 
 [Service]
-#replace user with an existing system user. Should be the same user from step 8.
+# replace user with an existing system user
 User=pi
-ExecStart=/usr/bin/python /usr/local/bin/rpi_sensor/event_loop.py
+ExecStart=/usr/bin/python /usr/local/bin/rpi_sensor_event_loop.py
 
 [Install]
 WantedBy=multi-user.target

@@ -37,8 +37,8 @@ class ReedSwitch(object):
     def state(self):
         return GPIO.input(self.pin)
 
-    def payload(self, args):
+    def payload(self):
         return json.dumps({'state': self.state()})
 
-    def callback(self):
+    def callback(self, pin):
         mqtt.publish(self.topic, self.payload())

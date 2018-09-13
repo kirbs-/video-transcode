@@ -1,5 +1,5 @@
 # import asyncio
-from config import config
+from rpi_sensor.config import config
 import RPi.GPIO as GPIO
 from rpi_sensor.binary import *
 import time
