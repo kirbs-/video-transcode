@@ -15,10 +15,11 @@ class ReedSwitch(object):
     Extends simple binary sensor by adding configuration for normally open or normally closed reed switches.
     """
 
-    def __init__(self, pin, topic, normally_open):
+    def __init__(self, pin, topic, name, normally_open):
         self.pin = pin
         self.topic = topic
         self.normally_open = normally_open
+        self.name = name
         GPIO.setmode(GPIO.BCM)
         self.setup()
 
