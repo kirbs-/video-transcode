@@ -36,10 +36,14 @@ class ReedSwitch(object):
         GPIO.input(self.pin, GPIO.IN, pull_up_down=mode)
 
     def state(self):
-        return GPIO.input(self.pin)
+        if GPIO.input(self.pin) == 1:
+            return "ON"
+        else:
+            return "OFF"
 
     def payload(self):
-        return json.dumps({'state': self.state()})
+        # return json.dumps({'state': self.state()})
+        return self.state()
 
     def callback(self, pin):
         mqtt.publish(self.topic, self.payload())
