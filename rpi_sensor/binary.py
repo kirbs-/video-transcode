@@ -37,9 +37,9 @@ class ReedSwitch(object):
 
     def state(self):
         if GPIO.input(self.pin) == 1:
-            return "ON"
-        else:
             return "OFF"
+        else:
+            return "ON"
 
     def payload(self):
         # return json.dumps({'state': self.state()})

@@ -13,6 +13,8 @@ for sensor in config.sensors:
     if s:
         GPIO.add_event_detect(sensor.pin, GPIO.RISING, callback=s.callback, bouncetime=500)
 
+mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_class": "garage_door"}')
+
 while True:
-    mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_clase": "garage_door"}')
-    time.sleep(1)
+    #mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_class": "garage_door"}')
+    time.sleep(15)
