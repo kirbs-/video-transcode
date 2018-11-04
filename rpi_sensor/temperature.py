@@ -31,7 +31,7 @@ class DHT(object):
 
     def setup(self):
         mqtt.publish('homeassistant/binary_sensor/{name}/config',
-                     '{"name": "{name}", "device_class": "{device_class}"}'.format({'name': self.name, 'device_class': self.device_class}))
+                     '{"name": "{self.name}", "device_class": "{device_class}"}'.format(name=self.name, device_class=self.device_class}))
 
     def state(self):
         return self.read()
