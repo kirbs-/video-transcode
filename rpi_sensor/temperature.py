@@ -14,7 +14,7 @@ class DHT(object):
         self.setup()
 
     def read(self, scale='F'):
-        self.humidity, self.temperature = dht.read(self.dht_type, self.pin) #dht.read(22, 18)
+        self.humidity, self.temperature = dht.read(22, self.pin) #dht.read(22, 18)
 
         if scale == 'F':
             return json.dumps({'humidity': self.humidity, 'temperature': self.temperature_F})
@@ -31,7 +31,7 @@ class DHT(object):
 
     def setup(self):
         mqtt.publish('homeassistant/binary_sensor/{name}/config',
-                     '{"name": "{name}", "device_class": "garage_door"}'.format({'name': self.name, self.device_class}))
+                     '{"name": "{name}", "device_class": "{device_class}"}'.format({'name': self.name, 'device_class': self.device_class}))
 
     def state(self):
         return self.read()
