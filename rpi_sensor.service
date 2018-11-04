@@ -4,6 +4,7 @@ After=network-online.target
 
 [Service]
 # replace user with an existing system user
+Restart=always
 User=pi
 ExecStart=/usr/bin/python /usr/local/bin/rpi_sensor_event_loop.py
 
