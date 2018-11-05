@@ -14,7 +14,7 @@ class DHT(object):
         self.setup()
 
     def read(self, scale='F'):
-        self.humidity, self.temperature = dht.read(22, self.pin) #dht.read(22, 18)
+        self.humidity, self.temperature = dht.read(22, self.pin)
 
         if scale == 'F':
             return json.dumps({'humidity': self.humidity, 'temperature': self.temperature_F})
@@ -31,7 +31,7 @@ class DHT(object):
 
     def setup(self):
         config = json.dumps({'name': self.name, 'device_class': self.device_class})
-        mqtt.publish('homeassistant/binary_sensor/{}/config'.format(self.name), config)
+        mqtt.publish('homeassistant/sensor/{}/config'.format(self.name), config)
 
     def state(self):
         return self.read()
