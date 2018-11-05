@@ -30,8 +30,8 @@ class DHT(object):
         return self.temperature
 
     def setup(self):
-        mqtt.publish('homeassistant/binary_sensor/{name}/config',
-                     '{"name": "{self.name}", "device_class": "{device_class}"}'.format(name=self.name, device_class=self.device_class}))
+        config = json.dumps({'name': self.name, 'device_class': self.device_class})
+        mqtt.publish('homeassistant/binary_sensor/{}/config'.format(self.name), config)
 
     def state(self):
         return self.read()
