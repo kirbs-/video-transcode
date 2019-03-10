@@ -1,7 +1,9 @@
-#! /home/kirby/.virtualenvs/video-transcode/bin/python
+#! /home/kirby/.pyenv/shims/python3.7
 from celery import Celery
 import subprocess
 import sys
+import json
+import os
 
 CELERY_BROKER = 'redis://localhost:6379/0'
 
