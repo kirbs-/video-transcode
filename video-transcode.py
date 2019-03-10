@@ -37,4 +37,4 @@ def run(cmd):
             return res
     except subprocess.CalledProcessError as e:
         # logging.debug(e.output)
-        print e.output
+        print(e.output)
