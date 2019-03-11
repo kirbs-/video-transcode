@@ -1,9 +1,10 @@
-#! /home/kirby/.pyenv/shims/python3.7
+#! /home/kirby/.pyenv/versions/3.7.2/envs/video-transcode/bin/
 from celery import Celery
 import subprocess
 import sys
 import json
 import os
+import logging
 
 CELERY_BROKER = 'redis://localhost:6379/0'
 
@@ -28,7 +29,7 @@ def transcode():
 
 def run(cmd):
     try:
-        # logging.debug(' '.join(cmd))
+        logging.debug(' '.join(cmd))
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         # logging.debug(res)
         try:
@@ -38,3 +39,7 @@ def run(cmd):
     except subprocess.CalledProcessError as e:
         # logging.debug(e.output)
         print(e.output)
+
+
+if __name__ == '__main__':
+    transcode()
