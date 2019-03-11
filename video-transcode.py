@@ -8,7 +8,7 @@ import logging
 
 CELERY_BROKER = 'redis://localhost:6379/0'
 
-app = Celery('. transcode-tasks', broker=CELERY_BROKER)
+app = Celery('. video-transcode', broker=CELERY_BROKER)
 
 
 @app.task
