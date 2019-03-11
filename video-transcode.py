@@ -1,4 +1,4 @@
-#! /home/kirby/.pyenv/versions/3.7.2/envs/video-transcode/bin/
+# /home/kirby/.pyenv/versions/3.7.2/envs/video-transcode/bin/
 from celery import Celery
 import subprocess
 import sys
@@ -8,7 +8,7 @@ import logging
 
 CELERY_BROKER = 'redis://localhost:6379/0'
 
-app = Celery('transcode-tasks', broker=CELERY_BROKER)
+app = Celery('. transcode-tasks', broker=CELERY_BROKER)
 
 
 @app.task
