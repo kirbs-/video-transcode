@@ -13,7 +13,7 @@ app = Celery('transcode-tasks', broker=CELERY_BROKER)
 
 @app.task
 def transcode():
-    input_file = sys.args[0]
+    input_file = sys.argv[0]
     input_filedir = os.path.dirname(os.path.abspath(input_file))
     input_filename = os.path.basename(input_file)
     out_filename = input_filename.split('.')[0] + '.mkv'
