@@ -1,4 +1,4 @@
-#! /home/kirby/.pyenv/versions/3.7.2/envs/video-transcode/bin/
+#! /home/kirby/.pyenv/versions/3.7.2/envs/video-transcode/bin/python
 from celery import Celery
 import subprocess
 import sys
@@ -50,7 +50,7 @@ def schedule():
     now = pendulum.now()
     tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    task_cnt = c.scheduled()
+    task_cnt = len(c.scheduled())
     minute_offset = task_cnt * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
@@ -78,4 +78,4 @@ def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
 
 
 if __name__ == '__main__':
-    transcode.delay(sys.argv[0], eta=schedule())
+    transcode.apply_async((sys.argv[0],), eta=schedule())
