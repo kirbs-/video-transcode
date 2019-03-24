@@ -10,6 +10,15 @@ from datetime import datetime, timedelta
 import pendulum
 
 
+FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
+log_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+handler = logging.FileHandler('C:\opt\celery/video-traanscode={}.log'.format(log_timestamp))
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter(FORMAT))
+logger.addHandler(handler)
 CELERY_BROKER = 'redis://localhost:6379/0'
 
 app = Celery('video-transcode', broker=CELERY_BROKER)
@@ -17,6 +26,7 @@ app = Celery('video-transcode', broker=CELERY_BROKER)
 @app.task
 def transcode(input_file):
     # input_file = sys.argv[0]
+    logging.info('Processing file {}'.format(input_file))
     input_filedir = os.path.dirname(os.path.abspath(input_file))
     input_filename = os.path.basename(input_file)
     out_filename = input_filename.split('.')[0] + '.mkv'
