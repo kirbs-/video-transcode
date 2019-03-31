@@ -15,7 +15,7 @@ log_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-handler = logging.FileHandler('C:\opt\celery/video-traanscode={}.log'.format(log_timestamp))
+handler = logging.FileHandler('video-traanscode-{}.log'.format(log_timestamp))
 handler.setLevel(logging.INFO)
 handler.setFormatter(logging.Formatter(FORMAT))
 logger.addHandler(handler)
