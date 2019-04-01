@@ -33,7 +33,7 @@ def transcode(input_file):
 
     # print(filename)
 
-    cmd = ['comcut', input_file]
+    cmd = ['/usr/local/bin/comcut', input_file]
     res = run(cmd)
 
     logging.info(res)
