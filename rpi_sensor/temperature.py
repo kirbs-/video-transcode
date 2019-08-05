@@ -30,15 +30,25 @@ class DHT(object):
         return self.temperature
 
     def setup(self):
-        config = json.dumps({'name': self.name, 'device_class': self.device_class})
-        mqtt.publish('homeassistant/sensor/{}/config'.format(self.name), config)
+        # config = json.dumps({'name': self.name, 'device_class': self.device_class})
+        config = json.dumps({'name': self.name,
+                             'device_class': 'sensor',
+                             'unit_of_measurement': '°F',
+                             'value_template': "{{ value_json.temperature }}"})
+        mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'temp'), config)
+
+        config = json.dumps({'name': self.name,
+                             'device_class': 'sensor',
+                             'unit_of_measurement': '%',
+                             'value_template': "{{ value_json.humidity }}"})
+        mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'humidity'), config)
 
     def state(self):
         return self.read()
 
     def payload(self):
-        # return json.dumps({'state': self.state()})
-        return self.state()
+        return json.dumps({'state': self.state()})
+        # return self.state()
 
-    def callback(self, pin):
+    def callback(self):
         mqtt.publish(self.topic, self.payload())
