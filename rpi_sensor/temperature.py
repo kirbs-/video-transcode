@@ -1,3 +1,4 @@
+# coding=utf-8
 import Adafruit_DHT as dht
 import json
 import rpi_sensor.mqtt as mqtt
