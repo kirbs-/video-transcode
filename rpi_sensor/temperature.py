@@ -33,14 +33,14 @@ class DHT(object):
     def setup(self):
         # config = json.dumps({'name': self.name, 'device_class': self.device_class})
         config = json.dumps({'name': self.name,
-                             'device_class': 'sensor',
+                             'device_class': 'temperature',
                              'unit_of_measurement': '°F',
                              'value_template': "{{ value_json.temperature }}",
                              'state_topic': self.topic})
         mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'temp'), config)
 
         config = json.dumps({'name': self.name,
-                             'device_class': 'sensor',
+                             'device_class': 'humidity',
                              'unit_of_measurement': '%',
                              'value_template': "{{ value_json.humidity }}",
                              'state_topic': self.topic})
