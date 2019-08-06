@@ -35,7 +35,7 @@ class DHT(object):
 
         device_config = {'name': "Laundry Room Climate",
                          'identifiers': self.name,
-                         'sw_version': 'RPI Sensor',
+                         'sw_version': 'rpi2mqtt',
                          'model': "DHT 22",
                          'manufacturer': 'Generic'}
 
@@ -43,6 +43,7 @@ class DHT(object):
                              'device_class': 'temperature',
                              'unit_of_measurement': '°F',
                              'value_template': "{{ value_json.temperature }}",
+                             'unique_id': self.name + '_temperature_rpi2mqtt',
                              'state_topic': self.topic,
                              'device': device_config})
         mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'temp'), config)
@@ -51,6 +52,7 @@ class DHT(object):
                              'device_class': 'humidity',
                              'unit_of_measurement': '%',
                              'value_template': "{{ value_json.humidity }}",
+                             'unique_id': self.name + '_temperature_rpi2mqtt',
                              'state_topic': self.topic,
                              'device': device_config})
         mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'humidity'), config)
