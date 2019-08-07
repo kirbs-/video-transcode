@@ -106,5 +106,5 @@ ENV/
 
 .idea
 
-rpi_sensor/config.yaml
-rpi_sensor/ca-chain.crt
+rpi2mqtt/config.yaml
+rpi2mqtt/ca-chain.crt

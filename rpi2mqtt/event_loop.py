@@ -1,10 +1,10 @@
 # import asyncio
-from rpi_sensor.config import config
+from rpi2mqtt.config import config
 import RPi.GPIO as GPIO
-from rpi_sensor.binary import *
-from rpi_sensor.temperature import *
+from rpi2mqtt.binary import *
+from rpi2mqtt.temperature import *
 import time
-import rpi_sensor.mqtt as mqtt
+import rpi2mqtt.mqtt as mqtt
 
 
 # for sensor in config.sensors:

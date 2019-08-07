@@ -1,5 +1,5 @@
 import paho.mqtt.publish as mqtt
-from rpi_sensor.config import config
+from rpi2mqtt.config import config
 import traceback
 
 
