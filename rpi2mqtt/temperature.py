@@ -24,7 +24,10 @@ class DHT(object):
 
     @property
     def temperature_F(self):
-        return self.temperature_C * 1.8 + 32.0
+        try:
+            return self.temperature_C * 1.8 + 32.0
+        except:
+            return -1.0
 
     @property
     def temperature_C(self):
