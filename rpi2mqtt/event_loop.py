@@ -20,14 +20,19 @@ import rpi2mqtt.mqtt as mqtt
 #     #mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_class": "garage_door"}')
 #     time.sleep(15)
 
-sensor_list = []
 
-for sensor in config.sensors:
-    s = DHT(sensor.pin, sensor.topic, sensor.name, 'sensor', sensor.type)
-    # s.setup()
-    sensor_list.append(s)
+def main():
+    sensor_list = []
 
-for i in range(10):
-    for sensor in sensor_list:
-        sensor.callback()
+    for sensor in config.sensors:
+        s = DHT(sensor.pin, sensor.topic, sensor.name, 'sensor', sensor.type)
+        # s.setup()
+        sensor_list.append(s)
 
+    for i in range(10):
+        for sensor in sensor_list:
+            sensor.callback()
+
+
+if __name__ == '__main__':
+    main()
