@@ -19,6 +19,8 @@ def main():
         for sensor in sensor_list:
             sensor.callback()
 
+        time.sleep(300)
+
 
 if __name__ == '__main__':
     main()
