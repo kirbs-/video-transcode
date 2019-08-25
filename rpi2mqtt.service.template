@@ -1,12 +1,12 @@
 [Unit]
-Description=RPi Sensor Service
+Description=RPi2mqtt Service
 After=network-online.target
 
 [Service]
 # replace user with an existing system user
-Restart=always
+Restart=on-failure
 User=pi
-ExecStart=/usr/bin/python /usr/local/bin/rpi_sensor_event_loop.py
+ExecStart=/usr/local/bin/rpi2mqtt_event_loop.py
 
 [Install]
 WantedBy=multi-user.target
