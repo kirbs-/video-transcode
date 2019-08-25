@@ -16,6 +16,8 @@ class DHT(object):
 
     def read(self, scale='F'):
         self.humidity, self.temperature = dht.read(22, self.pin)
+        #print humidity
+        #print temperature
 
         if scale == 'F':
             return json.dumps({'humidity': self.humidity, 'temperature': self.temperature_F})
@@ -68,8 +70,9 @@ class DHT(object):
         return self.read()
 
     def payload(self):
-        return json.dumps({'state': self.state()})
-        # return self.state()
+        # return json.dumps({'state': self.state()})
+        # return json.dumps(self.state())
+        return self.state()
 
     def callback(self):
         mqtt.publish(self.topic, self.payload())
