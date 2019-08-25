@@ -5,7 +5,7 @@ service_dir=/etc/systemd/system
 awk_script='BEGIN {FS="="; OFS="="}{if ($$1=="ExecStart") {$$2=exec_path} if (substr($$1,1,1) != "\#") {print $$0}}'
 
 rpi2mqtt: rpi2mqtt/event_loop.py setup.py
-	pip install .
+	pip install -e .
 
 rpi2mqtt.service: rpi2mqtt/event_loop.py
 # awk is needed to replace the absolute path of rpi2mqtt executable in the .service file

@@ -7,20 +7,6 @@ import time
 import rpi2mqtt.mqtt as mqtt
 
 
-# for sensor in config.sensors:
-#     if sensor.type == 'reed':
-#         s = ReedSwitch(sensor.pin, sensor.topic, sensor.name, sensor.normally_closed)
-#
-#     if s:
-#         GPIO.add_event_detect(sensor.pin, GPIO.RISING, callback=s.callback, bouncetime=500)
-#
-# mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_class": "garage_door"}')
-#
-# while True:
-#     #mqtt.publish('homeassistant/binary_sensor/garage_door/config', '{"name": "Garage", "device_class": "garage_door"}')
-#     time.sleep(15)
-
-
 def main():
     sensor_list = []
 
@@ -29,7 +15,7 @@ def main():
         # s.setup()
         sensor_list.append(s)
 
-    for i in range(10):
+    while True:
         for sensor in sensor_list:
             sensor.callback()
 
