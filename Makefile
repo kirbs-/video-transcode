@@ -11,7 +11,7 @@ rpi2mqtt.service: rpi2mqtt/event_loop.py
 # awk is needed to replace the absolute path of rpi2mqtt executable in the .service file
 	awk -v exec_path=$(shell which rpi2mqtt) $(awk_script) rpi2mqtt.service.template > rpi2mqtt.service
 
-install: $(service_dir) $(conf_dir) schedulerd.service scheduler.conf.yml
+install: $(service_dir) rpi2mqtt.service
 	cp rpi2mqtt.service $(service_dir)
 
 uninstall:
