@@ -1,13 +1,27 @@
 # rpi2mqtt
-Simplify reading GPIO sensors and publish to MQTT. Support systemd.
+Simplify reading Raspberry PI GPIO sensors and publish results to MQTT. 
  
 # Installation
-`pip install rpi2mqtt`
+1. `git clone https://github.com/kirbs-/rpi2mqtt`
+2. `sudo make`
+3. `sudo make install`
+4. update config.yaml
+5. `sudo systemctl enable rpi2mqtt`
+6. `sudo systemctl start rpi2mqtt`
 
-# Setup
-1. Copy config.yaml.
-2. Add MQTT broker details
+# Supported Sensors
+- Temperature
+    - DHT22/DHT11
+    - DS18B20
+- Binary
+    - Generic reed switches
+    
+
+# Setup MQTT
+1. Open config.yaml.
+2. Edit MQTT broker details
 ```yaml
+# config.yaml
 mqtt:
   host: example.com
   port: 8883
@@ -15,7 +29,10 @@ mqtt:
   username: mqtt_user
   password: secure_password
   retries: 3
-
+```
+3\. add sensors to config.yaml
+```yaml
+# config.yaml
 sensors:
   - type: dht22
     name: laundry_room_climate

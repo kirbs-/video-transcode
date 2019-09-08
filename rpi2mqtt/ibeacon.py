@@ -13,6 +13,7 @@ class Scanner(Sensor):
         self.beacon_uuid = beacon_uuid
         self.away_timeout = away_timeout
         self.last_seen = datetime.now()
+        self.setup()
 
     def setup(self):
         """
@@ -27,7 +28,7 @@ class Scanner(Sensor):
 
         config = json.dumps({'name': self.name + '_ibeacon',
                              'device_class': 'presence',
-                             'value_template': "{{ value_json.presenece }}",
+                             'value_template': "{{ value_json.presence }}",
                              'unique_id': self.name + '_ibeacon_rpi2mqtt',
                              'state_topic': self.topic,
                              "json_attributes_topic": self.topic,
