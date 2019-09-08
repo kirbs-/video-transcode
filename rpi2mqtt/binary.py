@@ -10,14 +10,13 @@ class Sensor(object):
         self.topic = topic
 
 
-class ReedSwitch(object):
+class ReedSwitch(Sensor):
     """
     Extends simple binary sensor by adding configuration for normally open or normally closed reed switches.
     """
 
     def __init__(self, pin, topic, name, normally_open):
-        self.pin = pin
-        self.topic = topic
+        super(ReedSwitch, self).__init__(pin, topic)
         self.normally_open = normally_open
         self.name = name
         GPIO.setmode(GPIO.BCM)
