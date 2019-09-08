@@ -9,7 +9,7 @@ class Scanner(Sensor):
     def __init__(self, name, topic, beacon_uuid, away_timeout=10):
         super(Scanner, self).__init__(None, topic)
         self.name = name
-        self.present = 'off'
+        self.present = 'OFF'
         self.rssi = None
         self.beacon_uuid = beacon_uuid
         self.away_timeout = away_timeout
@@ -40,7 +40,7 @@ class Scanner(Sensor):
     def process_ble_update(self, bt_addr, rssi, packet, additional_info):
         new_state = self.present
         if self.beacon_uuid == additional_info['uuid']:
-            new_state = 'on'
+            new_state = 'ON'
         self.rssi = rssi
         self.last_seen = datetime.now()
 
@@ -49,8 +49,8 @@ class Scanner(Sensor):
             self.callback()
 
     def state(self):
-        if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) < datetime.now():
-            self.present = 'off'
+        if self.present == 'ON' and self.last_seen + timedelta(seconds=self.away_timeout) < datetime.now():
+            self.present = 'OFF'
 
         return json.dumps({'presence': self.present, 'rssi': self.rssi})
 
