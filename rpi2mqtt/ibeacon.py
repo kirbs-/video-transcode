@@ -13,7 +13,7 @@ class Scanner(Sensor):
         self.present = {}
         self.beacon_uuid = beacon_uuid
         self.away_timeout = away_timeout
-        self.last_seen = time.now()
+        self.last_seen = datetime.now()
 
     def setup(self):
         """
@@ -34,7 +34,7 @@ class Scanner(Sensor):
                              "json_attributes_topic": self.topic,
                              'device': device_config})
 
-        mqtt.publish('homeassistant/sensor/{}_{}/config'.format(self.name, 'presence'), config)
+        mqtt.publish('homeassistant/binary_sensor/{}_{}/config'.format(self.name, 'presence'), config)
 
     def process_ble_update(self, bt_addr, rssi, packet, additional_info):
         scanned_uuids = [x for x in additional_info['uuid']]
