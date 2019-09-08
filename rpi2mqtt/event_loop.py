@@ -20,7 +20,7 @@ def main():
 
         sensor_list.append(s)
 
-    scanner = BeaconScanner()
+    scanner = BeaconScanner(sensor_list[1].process_ble_update)
     scanner.start()
 
     try:
