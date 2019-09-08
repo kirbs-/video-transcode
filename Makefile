@@ -15,7 +15,7 @@ install: $(service_dir) rpi2mqtt.service
 	cp rpi2mqtt.service $(service_dir)
 
 uninstall:
-	-systemctl stop mydaemond
+	-systemctl stop rpi2mqtt
 	-rm -r $(service_dir)/rpi2mqtt.service
 
 clean:
