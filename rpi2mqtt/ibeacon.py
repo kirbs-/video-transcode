@@ -6,10 +6,11 @@ from datetime import datetime, timedelta
 
 class Scanner(Sensor):
 
-    def __init__(self, name, topic, pin, beacon_uuid, away_timeout=10):
+    def __init__(self, name, topic, beacon_uuid, away_timeout=10):
         super(Scanner, self).__init__(None, topic)
         self.name = name
         self.present = 'off'
+        self.rssi = None
         self.beacon_uuid = beacon_uuid
         self.away_timeout = away_timeout
         self.last_seen = datetime.now()
@@ -40,7 +41,7 @@ class Scanner(Sensor):
         new_state = self.present
         if self.beacon_uuid == additional_info['uuid']:
             new_state = 'on'
-
+        self.rssi = rssi
         self.last_seen = datetime.now()
 
         if new_state != self.present:
@@ -51,7 +52,7 @@ class Scanner(Sensor):
         if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) < datetime.now():
             self.present = 'off'
 
-        return json.dumps({'presence': self.present})
+        return json.dumps({'presence': self.present, 'rssi': self.rssi})
 
     def payload(self):\
         return self.state()
