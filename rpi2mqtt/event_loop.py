@@ -6,6 +6,7 @@ from rpi2mqtt.temperature import *
 from rpi2mqtt.ibeacon import Scanner
 import time
 import rpi2mqtt.mqtt as mqtt
+from beacontools import BeaconScanner, IBeaconFilter
 
 
 def main():
@@ -19,11 +20,19 @@ def main():
 
         sensor_list.append(s)
 
-    while True:
-        for sensor in sensor_list:
-            sensor.callback()
+    scanner = BeaconScanner()
+    scanner.start()
 
-        time.sleep(300)
+    try:
+        while True:
+
+            for sensor in sensor_list:
+                sensor.callback()
+
+            time.sleep(300)
+
+    except:
+        scanner.stop()
 
 
 if __name__ == '__main__':

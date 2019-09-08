@@ -1,7 +1,6 @@
 from rpi2mqtt.binary import Sensor
 import rpi2mqtt.mqtt as mqtt
 import json
-from beacontools import BeaconScanner, IBeaconFilter
 from datetime import datetime, timedelta
 
 
@@ -10,7 +9,7 @@ class Scanner(Sensor):
     def __init__(self, name, topic, pin, beacon_uuid, away_timeout=10):
         super(Scanner, self).__init__(None, topic)
         self.name = name
-        self.present = {}
+        self.present = 'off'
         self.beacon_uuid = beacon_uuid
         self.away_timeout = away_timeout
         self.last_seen = datetime.now()
