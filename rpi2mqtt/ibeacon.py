@@ -39,10 +39,13 @@ class Scanner(Sensor):
     def process_ble_update(self, bt_addr, rssi, packet, additional_info):
         scanned_uuids = [x for x in additional_info['uuid']]
         if self.beacon_uuid in scanned_uuids:
-            self.present = 'on'
+            new_state = 'on'
 
         self.last_seen = datetime.now()
-        self.callback()
+
+        if new_state != self.present:
+            self.present = new_state
+            self.callback()
 
     def state(self):
         if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) < datetime.now():
