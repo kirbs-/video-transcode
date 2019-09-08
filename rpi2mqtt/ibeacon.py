@@ -37,14 +37,14 @@ class Scanner(Sensor):
         mqtt.publish('homeassistant/binary_sensor/{}_{}/config'.format(self.name, 'presence'), config)
 
     def process_ble_update(self, bt_addr, rssi, packet, additional_info):
-        new_state = None
+        new_state = self.present
         scanned_uuids = [x for x in additional_info['uuid']]
         if self.beacon_uuid in scanned_uuids:
             new_state = 'on'
 
         self.last_seen = datetime.now()
 
-        if new_state and new_state != self.present:
+        if new_state != self.present:
             self.present = new_state
             self.callback()
 
