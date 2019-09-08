@@ -42,7 +42,7 @@ class Scanner(Sensor):
             self.present = 'on'
 
         self.last_seen = datetime.now()
-        self.callback(None)
+        self.callback()
 
     def state(self):
         if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) >= datetime.now():
@@ -53,5 +53,5 @@ class Scanner(Sensor):
     def payload(self):\
         return self.state()
 
-    def callback(self, pin):
+    def callback(self):
         mqtt.publish(self.topic, self.payload())
