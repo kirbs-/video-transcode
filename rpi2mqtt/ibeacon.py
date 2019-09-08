@@ -20,7 +20,7 @@ class Scanner(Sensor):
         Setup Home Assistant MQTT discover for ibeacons.
         :return: None
         """
-        device_config = {'name': "Laundry Room Climate",
+        device_config = {'name': "iBeacon",
                          'identifiers': self.name,
                          'sw_version': 'rpi2mqtt',
                          'model': "iBeacon",
@@ -45,7 +45,7 @@ class Scanner(Sensor):
         self.callback()
 
     def state(self):
-        if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) >= datetime.now():
+        if self.present == 'on' and self.last_seen + timedelta(seconds=self.away_timeout) < datetime.now():
             self.present = 'off'
 
         return json.dumps({'presence': self.present})
