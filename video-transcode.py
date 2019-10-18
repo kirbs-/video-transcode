@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 import pendulum
 import pathlib
 import shlex
+import re
 
 
 #FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
@@ -25,13 +26,17 @@ CELERY_BROKER = 'redis://localhost:6379/0'
 
 app = Celery('video-transcode', broker=CELERY_BROKER)
 
+app.conf.update(
+    broker_transport_options = {'visibility_timeout': 604800}	
+)
+
 @app.task
 def transcode(input_file):
     
     # input_file = sys.argv[0]
     logging.info('Processing file {}'.format(input_file))
     f = pathlib.Path(input_file)
-    logging.info('File check: {}'.format(f.is_file()))
+    # logging.info('File check: {}'.format(f.is_file()))
     
     input_filedir = os.path.dirname(os.path.abspath(input_file))
     input_filename = os.path.basename(input_file)
@@ -46,17 +51,30 @@ def transcode(input_file):
 
     #cmd = ['/usr/local/bin/comcut']
     #os.chdir('/usr/local/bin')
-    cmd = ['/usr/local/bin/comcut', str(f)]
+    
+    filename_split = f.name.split(' - ')
+    
+    # extract season
+    matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
+    folder = ['/home','plex']
+    folder.append(filename_split[0])
+    folder.append('Season {}'.format(matched_season[1]))
+    folder.append(f.name)
+
+    moved_filename = os.path.join(*folder)
+    logging.info("Moved file location: {}".format(moved_filename))    
+
+    cmd = ['/usr/local/bin/comcut', moved_filename]
     #proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #res = proc.communicate('')
     #res = subprocess.check_output(cmd, stdin=ubprocess.STDOUT)
     res = run(cmd)
     #cmd = '/usr/local/bin/comcut '
     #cmd += shlex.quote(str(f))
-    logging.info(cmd)
+    # logging.info(cmd)
     #res = subprocess.run(cmd, shell=True)
 
-    logging.info(res)
+    #    logging.info(res)
     # cmd = ['ffmpeg', '-i', input_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
     # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
@@ -81,7 +99,7 @@ def schedule():
     now = pendulum.now()
     tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    task_cnt = len(c.scheduled())
+    task_cnt = len(c.scheduled()['w1@brains'])
     minute_offset = task_cnt * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
@@ -110,5 +128,7 @@ def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
 
 if __name__ == '__main__':
     logging.info("Received file from plex: {}".format(sys.argv[1]))
-    transcode.apply_async((sys.argv[1],)) #, eta=schedule())
+    #transcode.apply_async((sys.argv[1],))
+    transcode.apply_async((sys.argv[1],), eta=schedule())
     sys.exit()
+    #transcode(sys.argv[1])
