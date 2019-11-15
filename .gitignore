@@ -8,6 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+env/
 build/
 develop-eggs/
 dist/
@@ -19,6 +20,7 @@ lib64/
 parts/
 sdist/
 var/
+
 wheels/
 *.egg-info/
 .installed.cfg
@@ -94,6 +96,17 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# dotenv
+.env
+
+# virtualenv
+.venv/
+venv/
+ENV/
+
+# Spyder project settings
+.spyderproject
+
 # Rope project settings
 .ropeproject
 
@@ -106,3 +119,8 @@ venv.bak/
 .idea/*
 
 *.log
+.idea
+
+rpi2mqtt/config.yaml
+rpi2mqtt/ca-chain.crt
+
