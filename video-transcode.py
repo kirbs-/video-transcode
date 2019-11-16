@@ -30,17 +30,11 @@ app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
 )
 
-@app.task
-def transcode(input_file):
-    """
-    Passes input_file name from Plex to comcut.
-    :param input_file:
-    :return:
-    """
+
+def translate_filenames(input_file):
     logging.info('Processing file {}'.format(input_file))
     f = pathlib.Path(input_file)
-    
-    input_filedir = os.path.dirname(os.path.abspath(input_file))
+
     input_filename = os.path.basename(input_file)
     out_filename = input_filename.split('.')[0] + '.mkv'
 
@@ -48,17 +42,28 @@ def transcode(input_file):
     logging.info("Input file: {}".format(input_file))
 
     filename_split = f.name.split(' - ')
-    
+
     # extract season
     matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
-    folder = ['/home','plex']
+    folder = ['/home', 'plex']
     folder.append(filename_split[0])
     folder.append('Season {}'.format(matched_season[1]))
     folder.append(f.name)
 
     moved_filename = os.path.join(*folder)
-    logging.info("Moved file location: {}".format(moved_filename))    
+    logging.info("Moved file location: {}".format(moved_filename))
 
+    return out_filename, moved_filename
+
+
+@app.task
+def transcode(input_file):
+    """
+    Passes input_file name from Plex to comcut.
+    :param input_file:
+    :return:
+    """
+    out_filename, moved_filename = translate_filenames(input_file)
     cmd = ['/usr/local/bin/comcut', moved_filename]
     res = run(cmd)
 
@@ -118,29 +123,9 @@ def comcut_and_transcode(input_file):
     :param input_file:
     :return:
     """
-    logging.info('Processing file {}'.format(input_file))
-    f = pathlib.Path(input_file)
+    out_filename, moved_filename = translate_filenames(input_file)
 
-    input_filedir = os.path.dirname(os.path.abspath(input_file))
-    input_filename = os.path.basename(input_file)
-    out_filename = input_filename.split('.')[0] + '.mkv'
-
-    logging.info("Input file: {}".format(input_file))
-
-    filename_split = f.name.split(' - ')
-
-    # extract season
-    matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
-    folder = ['/home','plex']
-    folder.append(filename_split[0])
-    folder.append('Season {}'.format(matched_season[1]))
-    folder.append(f.name)
-
-    moved_filename = os.path.join(*folder)
-    logging.info("Moved file location: {}".format(moved_filename))
-
-    out_filename = moved_filename.split('.')[0] + '.mkv'
-
+    # cut commercials
     cmd = ['/usr/local/bin/comcut', moved_filename]
     res = run(cmd)
 
@@ -154,7 +139,6 @@ def comcut_and_transcode(input_file):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        logging.info("Received file from plex: {}".format(sys.argv[1]))
         transcode.apply_async((sys.argv[1],), eta=schedule())
     else:
         comcut_and_transcode.apply_async((sys.argv[1],))
