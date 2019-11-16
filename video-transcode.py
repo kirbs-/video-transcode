@@ -79,45 +79,6 @@ def transcode(input_file):
     # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
 
-@app.task
-def comcut_and_transcode(input_file):
-    logging.info('Processing file {}'.format(input_file))
-    f = pathlib.Path(input_file)
-    # logging.info('File check: {}'.format(f.is_file()))
-
-    input_filedir = os.path.dirname(os.path.abspath(input_file))
-    input_filename = os.path.basename(input_file)
-    out_filename = input_filename.split('.')[0] + '.mkv'
-
-    logging.info("Input file: {}".format(input_file))
-
-    filename_split = f.name.split(' - ')
-
-    # extract season
-    matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
-    folder = ['/home','plex']
-    folder.append(filename_split[0])
-    folder.append('Season {}'.format(matched_season[1]))
-    folder.append(f.name)
-
-    moved_filename = os.path.join(*folder)
-    logging.info("Moved file location: {}".format(moved_filename))
-
-    out_filename = moved_filename.split('.')[0] + '.mkv'
-
-    cmd = ['/usr/local/bin/comcut', moved_filename]
-    res = run(cmd)
-    
-    #    logging.info(res)
-    # transcode to h265
-    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
-    # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-    res = run(cmd)
-
-    # delete original file
-    os.remove(moved_filename)
-
-
 def run(cmd):
     try:
         logging.info(' '.join(cmd))
@@ -166,11 +127,8 @@ def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        logging.info("Received file from plex: {}".format(sys.argv[1]))
-        #transcode.apply_async((sys.argv[1],))
-        transcode.apply_async((sys.argv[1],), eta=schedule())
-        sys.exit()
-        #transcode(sys.argv[1])
-    else:
-        comcut_and_transcode.apply_async((sys.argv[1],))
+    logging.info("Received file from plex: {}".format(sys.argv[1]))
+    #transcode.apply_async((sys.argv[1],))
+    transcode.apply_async((sys.argv[1],), eta=schedule())
+    sys.exit()
+    #transcode(sys.argv[1])
