@@ -64,7 +64,7 @@ def transcode(input_file):
     moved_filename = os.path.join(*folder)
     logging.info("Moved file location: {}".format(moved_filename))    
 
-    cmd = ['/usr/local/bin/comcut', moved_filename]
+    cmd = ['/usr/local/bin/comcut', shlex.quote(moved_filename)]
     #proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     #res = proc.communicate('')
     #res = subprocess.check_output(cmd, stdin=ubprocess.STDOUT)
@@ -133,7 +133,10 @@ def comcut_and_transcode(input_file):
 
     input_filedir = os.path.dirname(os.path.abspath(input_file))
     input_filename = os.path.basename(input_file)
-    out_filename = input_filename.split('.')[0] + '.mkv'
+    # out_filename = input_filename.split('.')[0] + '.mkv'
+    out_filename = os.path.splitext(input_filename)[0] + '.mkv'
+
+    print(out_filename)
 
     logging.info("Input file: {}".format(input_file))
 
@@ -147,11 +150,14 @@ def comcut_and_transcode(input_file):
     folder.append(f.name)
 
     moved_filename = os.path.join(*folder)
+    #moved_filename = shlex.quote(os.path.join(*folder))
     logging.info("Moved file location: {}".format(moved_filename))
-
-    out_filename = moved_filename.split('.')[0] + '.mkv'
+    print(moved_filename)
+    # out_filename = moved_filename.split('.')[0] + '.mkv'
+    out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
 
     cmd = ['/usr/local/bin/comcut', moved_filename]
+    print(cmd)
     res = run(cmd)
 
     #    logging.info(res)
@@ -167,9 +173,11 @@ def comcut_and_transcode(input_file):
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         logging.info("Received file from plex: {}".format(sys.argv[1]))
-        #transcode.apply_async((sys.argv[1],))
-        transcode.apply_async((sys.argv[1],), eta=schedule())
+        # transcode.apply_async((sys.argv[1],))
+        # transcode.apply_async((sys.argv[1],), eta=schedule())
+        comcut_and_transcode.apply_async((sys.argv[1],))
         sys.exit()
         #transcode(sys.argv[1])
     else:
-        comcut_and_transcode.apply_async((sys.argv[1],))
+        # comcut_and_transcode.apply_async((sys.argv[1],))
+        comcut_and_transcode(sys.argv[1])
