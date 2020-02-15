@@ -162,7 +162,7 @@ def comcut_and_transcode(input_file):
 
     #    logging.info(res)
     # transcode to h265
-    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
+    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
     # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     res = run(cmd)
 
@@ -175,9 +175,9 @@ if __name__ == '__main__':
         logging.info("Received file from plex: {}".format(sys.argv[1]))
         # transcode.apply_async((sys.argv[1],))
         # transcode.apply_async((sys.argv[1],), eta=schedule())
-        comcut_and_transcode.apply_async((sys.argv[1],))
+        comcut_and_transcode.apply_async((sys.argv[1],), eta=schedule())
         sys.exit()
         #transcode(sys.argv[1])
     else:
         # comcut_and_transcode.apply_async((sys.argv[1],))
-        comcut_and_transcode(sys.argv[1])
+        transcode(sys.argv[1])
