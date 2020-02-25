@@ -33,4 +33,7 @@ setup(name='video-transcode',
       cmdclass={
             'install': InstallSystemServiceCommand,
       },
+      entry_points={
+        'console_scripts': ['video-transcode=video-transcode.video-transcode:main']
+      }
 )
