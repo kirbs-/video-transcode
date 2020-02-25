@@ -12,11 +12,11 @@ from subprocess import check_call
 #         develop.run(self)
 
 
-class InstallSystemServiceCommand(install):
-    """Post-installation for installation mode."""
-    def run(self):
-        check_call("apt-get install this-package".split())
-        install.run(self)
+# class InstallSystemServiceCommand(install):
+#     """Post-installation for installation mode."""
+#     def run(self):
+#         check_call("apt-get install this-package".split())
+#         install.run(self)
 
 
 setup(name='video-transcode',
@@ -30,9 +30,9 @@ setup(name='video-transcode',
       package_data={'video-transcode': [os.path.join('config', '*')]},
       install_requires=['celery', 'pyyaml>=5.1', 'pendulum'],
       zip_safe=False,
-      cmdclass={
-            'install': InstallSystemServiceCommand,
-      },
+      # cmdclass={
+      #       'install': InstallSystemServiceCommand,
+      # },
       entry_points={
         'console_scripts': ['video-transcode=video-transcode.video-transcode:main']
       }

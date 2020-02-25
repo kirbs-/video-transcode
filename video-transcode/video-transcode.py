@@ -61,6 +61,10 @@ def translate_filenames(input_file):
 
     # extract season
     matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
+
+    if not matched_season:
+        matched_season = re.search('(\d*)-(\d*)-(\d*)', filename_split[1])
+
     folder = ['/home', 'plex']
     folder.append(filename_split[0])
     folder.append('Season {}'.format(matched_season[1]))
@@ -155,7 +159,8 @@ def comcut_and_transcode(input_file):
         os.remove(moved_filename)
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    main()
 #     if len(sys.argv) == 2:
 #         comcut.apply_async((sys.argv[1],), eta=schedule())
 #     else:
