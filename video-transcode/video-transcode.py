@@ -9,8 +9,15 @@ from celery.task.control import inspect
 from datetime import datetime, timedelta
 import pendulum
 import pathlib
-import shlex
+# import shlex
 import re
+import yaml
+import pkg_resources
+
+
+# Load config.yaml
+with open(pkg_resources.resource_filename('video-transcode','config.yaml')) as f:
+    config = yaml.full_load(f.read())
 
 
 #FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
@@ -22,9 +29,9 @@ import re
 #handler.setLevel(logging.INFO)
 #handler.setFormatter(logging.Formatter(FORMAT))
 #logger.addHandler(handler)
-CELERY_BROKER = 'redis://localhost:6379/0'
+# CELERY_BROKER = 'redis://localhost:6379/0'
 
-app = Celery('video-transcode', broker=CELERY_BROKER)
+app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'])
 
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
@@ -66,7 +73,7 @@ def transcode(input_file):
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = ['/usr/local/bin/comcut', moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
     res = run(cmd)
 
 
@@ -95,7 +102,7 @@ def schedule():
     now = pendulum.now()
     tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    task_cnt = len(c.scheduled()['w1@brains'])
+    task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
     minute_offset = task_cnt * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
@@ -128,15 +135,16 @@ def comcut_and_transcode(input_file):
     out_filename, moved_filename = translate_filenames(input_file)
 
     # cut commercials
-    cmd = ['/usr/local/bin/comcut', moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
     res = run(cmd)
 
     # transcode to h265
-    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
+    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
     res = run(cmd)
 
     # delete original file
-    os.remove(moved_filename)
+    if config['DELETE_SOURCE_AFTER_TRANSCODE']:
+        os.remove(moved_filename)
 
 
 if __name__ == '__main__':
