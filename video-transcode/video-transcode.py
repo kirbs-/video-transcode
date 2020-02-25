@@ -36,7 +36,8 @@ def translate_filenames(input_file):
     f = pathlib.Path(input_file)
 
     input_filename = os.path.basename(input_file)
-    out_filename = input_filename.split('.')[0] + '.mkv'
+    # out_filename = input_filename.split('.')[0] + '.mkv'
+    out_filename = os.path.splitext(input_filename)[0] + '.mkv'
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
@@ -52,6 +53,7 @@ def translate_filenames(input_file):
 
     moved_filename = os.path.join(*folder)
     logging.info("Moved file location: {}".format(moved_filename))
+    out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
 
     return out_filename, moved_filename
 
