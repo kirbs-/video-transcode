@@ -2,7 +2,7 @@
 from celery import Celery
 import subprocess
 import sys
-import json
+# import json
 import os
 import logging
 from celery.task.control import inspect
@@ -13,11 +13,19 @@ import pathlib
 import re
 import yaml
 import pkg_resources
+import argparse
 
 
 # Load config.yaml
-with open(pkg_resources.resource_filename('video-transcode','config.yaml')) as f:
+with open(pkg_resources.resource_filename('video-transcode','config/config.yaml')) as f:
     config = yaml.full_load(f.read())
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('filename')
+parser.add_argument("-a", "--action",
+                    help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
+                    default=config['DEFAULT_ACTION'])
 
 
 #FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
@@ -66,7 +74,7 @@ def translate_filenames(input_file):
 
 
 @app.task
-def transcode(input_file):
+def comcut(input_file):
     """
     Passes input_file name from Plex to comcut.
     :param input_file:
@@ -84,10 +92,10 @@ def run(cmd):
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         logging.debug(res)
 
-        try:
-            return json.loads(res)
-        except:
-            return res
+        # try:
+        #     return json.loads(res)
+        # except:
+        return res
     except subprocess.CalledProcessError as e:
         logging.info(e.output)
         logging.info(e.cmd)
@@ -147,10 +155,20 @@ def comcut_and_transcode(input_file):
         os.remove(moved_filename)
 
 
-if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        transcode.apply_async((sys.argv[1],), eta=schedule())
-    else:
-        comcut_and_transcode.apply_async((sys.argv[1],))
+# if __name__ == '__main__':
+#     if len(sys.argv) == 2:
+#         comcut.apply_async((sys.argv[1],), eta=schedule())
+#     else:
+#         comcut_and_transcode.apply_async((sys.argv[1],))
 
-    sys.exit()
+#     sys.exit()
+
+def main():
+    args = parser.parse_args()
+
+    if args.action == 'transcode':
+        pass
+    elif args.action == 'comcut':
+        comcut.apply_async((args.filename,), eta=schedule())
+    elif args.action == 'comcut_and_transcode':
+        comcut_and_transcode.apply_async((args.filename,), eta=schedule())
