@@ -30,71 +30,64 @@ app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
 )
 
-@app.task
-def transcode(input_file):
-    
-    # input_file = sys.argv[0]
+
+def translate_filenames(input_file):
     logging.info('Processing file {}'.format(input_file))
     f = pathlib.Path(input_file)
-    # logging.info('File check: {}'.format(f.is_file()))
-    
-    input_filedir = os.path.dirname(os.path.abspath(input_file))
+
     input_filename = os.path.basename(input_file)
     out_filename = input_filename.split('.')[0] + '.mkv'
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
-    #sys.path.append('/usr/bin')
-    #sys.path.append('/usr/local/bin')
-    #logging.info(sys.path)
-    #logging.info(subprocess.check_output(['which','comcut']))
 
-    #cmd = ['/usr/local/bin/comcut']
-    #os.chdir('/usr/local/bin')
-    
     filename_split = f.name.split(' - ')
-    
+
     # extract season
     matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
-    folder = ['/home','plex']
+    folder = ['/home', 'plex']
     folder.append(filename_split[0])
     folder.append('Season {}'.format(matched_season[1]))
     folder.append(f.name)
 
     moved_filename = os.path.join(*folder)
-    logging.info("Moved file location: {}".format(moved_filename))    
+    logging.info("Moved file location: {}".format(moved_filename))
 
-    cmd = ['/usr/local/bin/comcut', shlex.quote(moved_filename)]
-    #proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    #res = proc.communicate('')
-    #res = subprocess.check_output(cmd, stdin=ubprocess.STDOUT)
+    return out_filename, moved_filename
+
+@app.task
+def transcode(input_file):
+    """
+    Passes input_file name from Plex to comcut.
+    :param input_file:
+    :return:
+    """
+    out_filename, moved_filename = translate_filenames(input_file)
+    cmd = ['/usr/local/bin/comcut', moved_filename]
     res = run(cmd)
-    #cmd = '/usr/local/bin/comcut '
-    #cmd += shlex.quote(str(f))
-    # logging.info(cmd)
-    #res = subprocess.run(cmd, shell=True)
-
-    #    logging.info(res)
-    # cmd = ['ffmpeg', '-i', input_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
-    # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
 
 def run(cmd):
+    """Utility to execute command on local OS."""
     try:
         logging.info(' '.join(cmd))
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        # logging.debug(res)
+        logging.debug(res)
+
         try:
             return json.loads(res)
         except:
             return res
     except subprocess.CalledProcessError as e:
-        # logging.debug(e.output)
         logging.info(e.output)
         logging.info(e.cmd)
 
 
 def schedule():
+    """
+    Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
+    """
+
     c = inspect()
     now = pendulum.now()
     tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
@@ -107,8 +100,8 @@ def schedule():
 
 
 def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
-    #     print(schedule < tomorrow_8am)
-    #     print(schedule)
+    """Keeps track of the number of comcut or transcode tasks in queue and schedules next task accordingly."""
+
     if scheduled_start < tomorrow_8am:
         return scheduled_start
 
@@ -119,51 +112,25 @@ def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
 
     minute_offset = task_cnt * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-    #     print(task_cnt)
-    #     print(tomorrow_midnight)
-    #     print(schedule)
-    #     print(tomorrow_8am)
+
     return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
 
 @app.task
 def comcut_and_transcode(input_file):
-    logging.info('Processing file {}'.format(input_file))
-    f = pathlib.Path(input_file)
-    # logging.info('File check: {}'.format(f.is_file()))
+    """
+    Passes input_file name from Plex to comcut then to ffmpeg.
+    :param input_file:
+    :return:
+    """
+    out_filename, moved_filename = translate_filenames(input_file)
 
-    input_filedir = os.path.dirname(os.path.abspath(input_file))
-    input_filename = os.path.basename(input_file)
-    # out_filename = input_filename.split('.')[0] + '.mkv'
-    out_filename = os.path.splitext(input_filename)[0] + '.mkv'
-
-    print(out_filename)
-
-    logging.info("Input file: {}".format(input_file))
-
-    filename_split = f.name.split(' - ')
-
-    # extract season
-    matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
-    folder = ['/home','plex']
-    folder.append(filename_split[0])
-    folder.append('Season {}'.format(matched_season[1]))
-    folder.append(f.name)
-
-    moved_filename = os.path.join(*folder)
-    #moved_filename = shlex.quote(os.path.join(*folder))
-    logging.info("Moved file location: {}".format(moved_filename))
-    print(moved_filename)
-    # out_filename = moved_filename.split('.')[0] + '.mkv'
-    out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
-
+    # cut commercials
     cmd = ['/usr/local/bin/comcut', moved_filename]
     print(cmd)
     res = run(cmd)
 
-    #    logging.info(res)
     # transcode to h265
-    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
-    # subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
     res = run(cmd)
 
     # delete original file
@@ -172,12 +139,8 @@ def comcut_and_transcode(input_file):
 
 if __name__ == '__main__':
     if len(sys.argv) == 2:
-        logging.info("Received file from plex: {}".format(sys.argv[1]))
-        # transcode.apply_async((sys.argv[1],))
-        # transcode.apply_async((sys.argv[1],), eta=schedule())
-        comcut_and_transcode.apply_async((sys.argv[1],), eta=schedule())
-        sys.exit()
-        #transcode(sys.argv[1])
+        transcode.apply_async((sys.argv[1],), eta=schedule())
     else:
-        # comcut_and_transcode.apply_async((sys.argv[1],))
-        transcode(sys.argv[1])
+        comcut_and_transcode.apply_async((sys.argv[1],))
+
+    sys.exit()
