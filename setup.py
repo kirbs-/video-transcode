@@ -19,21 +19,21 @@ from subprocess import check_call
 #         install.run(self)
 
 
-setup(name='video-transcode',
+setup(name='video_transcode',
       version='1.0.0',
       url='https://github.com/kirbs-/video-transcode',
       description='Video commercial cutting and transcoding stack.',
       author='Chris Kirby',
       author_email='kirbycm@gmail.com',
       license='MIT',
-      packages=['video-transcode'],
-      package_data={'video-transcode': [os.path.join('config', '*')]},
+      packages=['video_transcode'],
+      package_data={'video_transcode': [os.path.join('config', '*')]},
       install_requires=['celery', 'pyyaml>=5.1', 'pendulum'],
       zip_safe=False,
       # cmdclass={
       #       'install': InstallSystemServiceCommand,
       # },
       entry_points={
-        'console_scripts': ['video-transcode=video-transcode.video-transcode:main']
+        'console_scripts': ['video-transcode=video_transcode.video_transcode:main']
       }
 )

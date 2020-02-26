@@ -1,5 +1,5 @@
 [Unit]
-Description=Video comcut and transcode service
+Description=Video commercial cutting and transcoding service.
 After=network.target
 
 [Service]
