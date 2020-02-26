@@ -2,15 +2,30 @@
 from celery import Celery
 import subprocess
 import sys
-import json
+# import json
 import os
 import logging
 from celery.task.control import inspect
 from datetime import datetime, timedelta
 import pendulum
 import pathlib
-import shlex
+# import shlex
 import re
+import yaml
+import pkg_resources
+import argparse
+
+
+# Load config.yaml
+with open(pkg_resources.resource_filename('video-transcode','config/config.yaml')) as f:
+    config = yaml.full_load(f.read())
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('filename')
+parser.add_argument("-a", "--action",
+                    help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
+                    default=config['DEFAULT_ACTION'])
 
 
 #FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
@@ -22,9 +37,9 @@ import re
 #handler.setLevel(logging.INFO)
 #handler.setFormatter(logging.Formatter(FORMAT))
 #logger.addHandler(handler)
-CELERY_BROKER = 'redis://localhost:6379/0'
+# CELERY_BROKER = 'redis://localhost:6379/0'
 
-app = Celery('video-transcode', broker=CELERY_BROKER)
+app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'])
 
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
@@ -36,7 +51,8 @@ def translate_filenames(input_file):
     f = pathlib.Path(input_file)
 
     input_filename = os.path.basename(input_file)
-    out_filename = input_filename.split('.')[0] + '.mkv'
+    # out_filename = input_filename.split('.')[0] + '.mkv'
+    out_filename = os.path.splitext(input_filename)[0] + '.mkv'
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
@@ -45,6 +61,10 @@ def translate_filenames(input_file):
 
     # extract season
     matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
+
+    if not matched_season:
+        matched_season = re.search('(\d*)-(\d*)-(\d*)', filename_split[1])
+
     folder = ['/home', 'plex']
     folder.append(filename_split[0])
     folder.append('Season {}'.format(matched_season[1]))
@@ -52,18 +72,19 @@ def translate_filenames(input_file):
 
     moved_filename = os.path.join(*folder)
     logging.info("Moved file location: {}".format(moved_filename))
+    out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
 
     return out_filename, moved_filename
 
 @app.task
-def transcode(input_file):
+def comcut(input_file):
     """
     Passes input_file name from Plex to comcut.
     :param input_file:
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = ['/usr/local/bin/comcut', moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
     res = run(cmd)
 
 
@@ -74,10 +95,10 @@ def run(cmd):
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         logging.debug(res)
 
-        try:
-            return json.loads(res)
-        except:
-            return res
+        # try:
+        #     return json.loads(res)
+        # except:
+        return res
     except subprocess.CalledProcessError as e:
         logging.info(e.output)
         logging.info(e.cmd)
@@ -92,7 +113,7 @@ def schedule():
     now = pendulum.now()
     tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
     tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    task_cnt = len(c.scheduled()['w1@brains'])
+    task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
     minute_offset = task_cnt * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
@@ -125,22 +146,33 @@ def comcut_and_transcode(input_file):
     out_filename, moved_filename = translate_filenames(input_file)
 
     # cut commercials
-    cmd = ['/usr/local/bin/comcut', moved_filename]
-    print(cmd)
+    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
     res = run(cmd)
 
     # transcode to h265
-    cmd = ['ffmpeg', '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
+    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
     res = run(cmd)
 
     # delete original file
-    os.remove(moved_filename)
+    if config['DELETE_SOURCE_AFTER_TRANSCODE']:
+        os.remove(moved_filename)
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 2:
-        transcode.apply_async((sys.argv[1],), eta=schedule())
-    else:
-        comcut_and_transcode.apply_async((sys.argv[1],))
+    main()
+#     if len(sys.argv) == 2:
+#         comcut.apply_async((sys.argv[1],), eta=schedule())
+#     else:
+#         comcut_and_transcode.apply_async((sys.argv[1],))
 
-    sys.exit()
+#     sys.exit()
+
+def main():
+    args = parser.parse_args()
+
+    if args.action == 'transcode':
+        pass
+    elif args.action == 'comcut':
+        comcut.apply_async((args.filename,), eta=schedule())
+    elif args.action == 'comcut_and_transcode':
+        comcut_and_transcode.apply_async((args.filename,), eta=schedule())
