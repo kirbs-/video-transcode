@@ -17,7 +17,7 @@ import argparse
 
 
 # Load config.yaml
-with open(pkg_resources.resource_filename('video-transcode','config/config.yaml')) as f:
+with open(pkg_resources.resource_filename('video_transcode','config/config.yaml')) as f:
     config = yaml.full_load(f.read())
 
 parser = argparse.ArgumentParser()
