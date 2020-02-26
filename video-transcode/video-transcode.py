@@ -159,15 +159,6 @@ def comcut_and_transcode(input_file):
         os.remove(moved_filename)
 
 
-if __name__ == '__main__':
-    main()
-#     if len(sys.argv) == 2:
-#         comcut.apply_async((sys.argv[1],), eta=schedule())
-#     else:
-#         comcut_and_transcode.apply_async((sys.argv[1],))
-
-#     sys.exit()
-
 def main():
     args = parser.parse_args()
 
@@ -177,3 +168,13 @@ def main():
         comcut.apply_async((args.filename,), eta=schedule())
     elif args.action == 'comcut_and_transcode':
         comcut_and_transcode.apply_async((args.filename,), eta=schedule())
+
+if __name__ == '__main__':
+    main()
+#     if len(sys.argv) == 2:
+#         comcut.apply_async((sys.argv[1],), eta=schedule())
+#     else:
+#         comcut_and_transcode.apply_async((sys.argv[1],))
+
+#     sys.exit()
+
