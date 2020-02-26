@@ -1,5 +1,6 @@
 from setuptools import setup
 import sys
+import os
 # from setuptools.command.develop import develop
 from setuptools.command.install import install
 from subprocess import check_call
