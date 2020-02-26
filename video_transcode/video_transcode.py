@@ -76,7 +76,6 @@ def translate_filenames(input_file):
 
     return out_filename, moved_filename
 
-
 @app.task
 def comcut(input_file):
     """
