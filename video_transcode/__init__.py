@@ -1,1 +1,1 @@
-import video_transcode.video_transcode
+from video_transcode.video_transcode import app

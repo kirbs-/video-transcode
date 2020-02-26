@@ -1,5 +1,5 @@
 CELERY_BROKER: redis://localhost:6379/0
-CELERY_QUEUE: video-transcode
+CELERY_QUEUE: video_transcode
 CELERY_WORKER_NAME: w1@brains
 PLEX_LIBRARY_FOLDER: /home/plex
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
