@@ -150,7 +150,7 @@ def comcut_and_transcode(input_file):
     res = run(cmd)
 
     # transcode to h265
-    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-c:a', 'copy', out_filename]
+    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
     res = run(cmd)
 
     # delete original file

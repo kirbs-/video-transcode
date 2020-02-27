@@ -7,7 +7,7 @@ Type=forking
 User=plex
 Group=plex
 Environment=PATH=/home/kirby/.pyenv/versions/video-transcode/bin:/usr/local/bin:/usr/bin:$PATH
-EnvironmentFile=/opt/celery/celery.conf
+EnvironmentFile=/opt/celery/video_transcode/config/celery.conf
 WorkingDirectory=/opt/celery
 ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
