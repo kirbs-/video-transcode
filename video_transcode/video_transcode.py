@@ -110,31 +110,32 @@ def schedule():
     """
 
     c = inspect()
-    now = pendulum.now()
-    tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-    tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=1)
     task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
-    minute_offset = task_cnt * 20
+
+    now = pendulum.now()
+    tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+    tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+    minute_offset = task_cnt % 24 * 20
     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
-    return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
+    return scheduled_start
 
 
-def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
-    """Keeps track of the number of comcut or transcode tasks in queue and schedules next task accordingly."""
+# def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
+#     """Keeps track of the number of comcut or transcode tasks in queue and schedules next task accordingly."""
 
-    if scheduled_start < tomorrow_8am:
-        return scheduled_start
+#     if scheduled_start < tomorrow_8am:
+#         return scheduled_start
 
-    if task_cnt > 24:
-        tomorrow_midnight += timedelta(days=1)
-        tomorrow_8am += timedelta(days=1)
-        task_cnt -= 24
+#     if task_cnt > 24:
+#         tomorrow_midnight += timedelta(days=1)
+#         tomorrow_8am += timedelta(days=1)
+#         task_cnt -= 24
 
-    minute_offset = task_cnt * 20
-    scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
+#     minute_offset = task_cnt * 20
+#     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
-    return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
+#     return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
 
 @app.task
 def comcut_and_transcode(input_file):
