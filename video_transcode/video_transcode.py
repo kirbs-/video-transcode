@@ -14,6 +14,7 @@ import re
 import yaml
 import pkg_resources
 import argparse
+import moviepy.editor as me
 
 
 # Load config.yaml
@@ -138,7 +139,7 @@ def schedule():
 #     return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
 
 @app.task
-def comcut_and_transcode(input_file):
+def comcut_and_transcode(input_file, **kwargs):
     """
     Passes input_file name from Plex to comcut then to ffmpeg.
     :param input_file:
@@ -159,6 +160,11 @@ def comcut_and_transcode(input_file):
         os.remove(moved_filename)
 
 
+def video_metadata(filename):
+    clip = me.VideoFileClip(filename)
+    return clip.size, clip.duration
+
+
 def main():
     args = parser.parse_args()
 
@@ -167,7 +173,8 @@ def main():
     elif args.action == 'comcut':
         comcut.apply_async((args.filename,), eta=schedule())
     elif args.action == 'comcut_and_transcode':
-        comcut_and_transcode.apply_async((args.filename,), eta=schedule())
+        frame_size, duration = video_metadata(args.filename)
+        comcut_and_transcode.apply_async((args.filename,), {'vt_frame_size': frame_size, 'vt_duration': duration}, eta=schedule())
 
 if __name__ == '__main__':
     main()
