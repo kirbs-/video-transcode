@@ -118,7 +118,7 @@ def schedule():
     # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
     minute_offset = task_cnt % 24 * 20
     scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-
+    print(str(scheduled_start))
     return scheduled_start
 
 
@@ -167,6 +167,8 @@ def video_metadata(filename):
 
 def main():
     args = parser.parse_args()
+
+    print(args.action)
 
     if args.action == 'transcode':
         pass
