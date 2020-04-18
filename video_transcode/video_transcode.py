@@ -112,11 +112,11 @@ def schedule():
     c = inspect()
     task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
 
-    now = pendulum.now()
-    tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-    tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+    tomorrow = pendulum.tomorrow()
+    # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+    # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
     minute_offset = task_cnt % 24 * 20
-    scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
+    scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
 
     return scheduled_start
 
