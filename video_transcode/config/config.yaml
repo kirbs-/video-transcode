@@ -1,4 +1,5 @@
 CELERY_BROKER: redis://localhost:6379/0
+CELERY_RESULT_BACKEND: redis://localhost:6379/0
 CELERY_QUEUE: video_transcode
 CELERY_WORKER_NAME: w1@brains
 PLEX_LIBRARY_FOLDER: /home/plex
@@ -6,3 +7,8 @@ COMCUT_BINARY_PATH: /usr/local/bin/comcut
 FFMPEG_BINARY_PATH: ffmpeg
 DELETE_SOURCE_AFTER_TRANSCODE: True
 DEFAULT_ACTION: comcut_and_transcode
+# TASK_LIMIT: 
+# hour to start transcoding (24 hr)
+SCHEDULE_START: 0
+# hour to stop transcoding (24 hr)
+SCHEDULE_END: 8

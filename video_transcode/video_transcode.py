@@ -40,7 +40,7 @@ parser.add_argument("-a", "--action",
 #logger.addHandler(handler)
 # CELERY_BROKER = 'redis://localhost:6379/0'
 
-app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'])
+app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'], backend=config['CELERY_RESULT_BACKEND'])
 # app.autodiscover_tasks(['video_transcode.video_transcode'])
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
