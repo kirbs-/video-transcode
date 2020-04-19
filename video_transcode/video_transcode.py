@@ -118,7 +118,7 @@ def schedule():
     # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
     minute_offset = task_cnt % 24 * 20
     scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-    print(str(scheduled_start))
+    # print(str(scheduled_start))
     return scheduled_start
 
 
@@ -168,15 +168,17 @@ def video_metadata(filename):
 def main():
     args = parser.parse_args()
 
-    print(args.action)
-
     if args.action == 'transcode':
         pass
     elif args.action == 'comcut':
         comcut.apply_async((args.filename,), eta=schedule())
     elif args.action == 'comcut_and_transcode':
         frame_size, duration = video_metadata(args.filename)
-        comcut_and_transcode.apply_async((args.filename,), {'vt_frame_size': frame_size, 'vt_duration': duration}, eta=schedule())
+        comcut_and_transcode.apply_async(
+            (args.filename,), 
+            {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+            eta=schedule(),
+            headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 if __name__ == '__main__':
     main()
