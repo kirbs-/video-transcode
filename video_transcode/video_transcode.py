@@ -126,7 +126,7 @@ def schedule(duration):
     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
     """
     c = inspect()
-    tasks = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+    tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
 
     scheduled_task_duration = sum(map(lambda v: v['vt_duration'], tasks))
 
