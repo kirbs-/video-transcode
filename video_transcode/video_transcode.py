@@ -105,21 +105,54 @@ def run(cmd):
         logging.info(e.cmd)
 
 
-def schedule():
+# def schedule():
+#     """
+#     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
+#     """
+
+#     c = inspect()
+#     task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+
+#     tomorrow = pendulum.tomorrow()
+#     # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+#     # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+#     minute_offset = task_cnt % 24 * 20
+#     scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
+#     # print(str(scheduled_start))
+#     return scheduled_start
+
+def schedule(duration):
     """
     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
     """
-
     c = inspect()
-    task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+    tasks = len(c.scheduled()[config['CELERY_WORKER_NAME']])
 
-    tomorrow = pendulum.tomorrow()
-    # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-    # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-    minute_offset = task_cnt % 24 * 20
-    scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-    # print(str(scheduled_start))
-    return scheduled_start
+    scheduled_task_duration = sum(map(lambda v: v['vt_duration'], tasks))
+
+    now = pendulum.now()
+    window_start = now.replace(hour=config['SCHEDULE_START'], minute=0, second=0)
+    window_end = now.replace(hour=config['SCHEDULE_END'], minute=0, second=0)
+
+    # Move to next window if now is later than today's window end.
+    if now > window_end:
+        window_start += timedelta(days=1)
+        window_end += timedelta(days=1)
+
+    # how much of today's processing window is remaining?
+    while True:
+        window_size = (window_end - window_start).seconds
+        remaining_window = scheduled_task_duration - window_size
+        
+#         print(f'Window size {window_size}')
+#         print(f'Remaining window {remaining_window}')
+
+        if scheduled_task_duration + duration <= window_size:
+            return window_start + timedelta(seconds=(scheduled_task_duration))
+        else:
+            window_start += timedelta(days=1)
+            window_end += timedelta(days=1)
+            scheduled_task_duration -= window_size
 
 
 # def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
@@ -171,21 +204,16 @@ def main():
     if args.action == 'transcode':
         pass
     elif args.action == 'comcut':
-        comcut.apply_async((args.filename,), eta=schedule())
+        comcut.apply_async((args.filename,), eta=schedule(5*60))
     elif args.action == 'comcut_and_transcode':
         frame_size, duration = video_metadata(args.filename)
         comcut_and_transcode.apply_async(
             (args.filename,), 
             {'vt_frame_size': frame_size, 'vt_duration': duration}, 
-            eta=schedule(),
+            eta=schedule(duration),
             headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 if __name__ == '__main__':
     main()
-#     if len(sys.argv) == 2:
-#         comcut.apply_async((sys.argv[1],), eta=schedule())
-#     else:
-#         comcut_and_transcode.apply_async((sys.argv[1],))
 
-#     sys.exit()
 
