@@ -128,7 +128,7 @@ def schedule(duration):
     c = inspect()
     tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
 
-    scheduled_task_duration = sum(map(lambda v: v['vt_duration'], tasks))
+    scheduled_task_duration = sum(map(lambda v: v['request']['kwargs']['vt_duration'], tasks))
 
     now = pendulum.now()
     window_start = now.replace(hour=config['SCHEDULE_START'], minute=0, second=0)
