@@ -20,6 +20,7 @@ import moviepy.editor as me
 # Load config.yaml
 with open(pkg_resources.resource_filename('video_transcode','config/config.yaml')) as f:
     config = yaml.full_load(f.read())
+    os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
 
 parser = argparse.ArgumentParser()
 
@@ -27,6 +28,10 @@ parser.add_argument('filename')
 parser.add_argument("-a", "--action",
                     help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
                     default=config['DEFAULT_ACTION'])
+parser.add_argument("-n", "--now",
+                    action='store_true',
+                    help="Run action now; don't schedule.")
+
 
 
 #FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
@@ -204,14 +209,25 @@ def main():
     if args.action == 'transcode':
         pass
     elif args.action == 'comcut':
-        comcut.apply_async((args.filename,), eta=schedule(5*60))
+        if args.now:
+            comcut.apply_async((args.filename,))
+        else:
+            comcut.apply_async((args.filename,), eta=schedule(5*60))
     elif args.action == 'comcut_and_transcode':
         frame_size, duration = video_metadata(args.filename)
-        comcut_and_transcode.apply_async(
-            (args.filename,), 
-            {'vt_frame_size': frame_size, 'vt_duration': duration}, 
-            eta=schedule(duration),
-            headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+
+        if args.now:
+            comcut_and_transcode.apply_async(
+                (args.filename,), 
+                {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+                headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+        else:
+            comcut_and_transcode.apply_async(
+                (args.filename,), 
+                {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+                eta=schedule(duration),
+                headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+
 
 if __name__ == '__main__':
     main()
