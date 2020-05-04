@@ -193,7 +193,20 @@ def comcut_and_transcode(input_file, **kwargs):
     res = run(cmd)
 
     # transcode to h265
-    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
+    # cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
+    cmd = [
+        config['FFMPEG_BINARY_PATH'], 
+        '-i', moved_filename, 
+        '-vsync', '0', 
+        '-hwaccel', 'auto', 
+        '-c:v', 'hevc_nvenc', 
+        '-rc:v', 'vbr_hq', 
+        '-qmin:v', '22',
+        '-qmax:v', '30', 
+        '-rc-lookahead', '8', 
+        '-weighted_pred', '1',
+        out_filename]
+        
     res = run(cmd)
 
     # delete original file
