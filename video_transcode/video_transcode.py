@@ -93,7 +93,7 @@ def comcut(input_file):
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], '--ffmpeg=/bin/ffmpeg/', moved_filename]
     res = run(cmd)
 
 
@@ -195,10 +195,11 @@ def comcut_and_transcode(input_file, **kwargs):
     # transcode to h265
     # cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
     cmd = [
+        'LD_LIBRARY_PATH=/usr/local/cuda/lib64',
         config['FFMPEG_BINARY_PATH'], 
-        '-i', moved_filename, 
         '-vsync', '0', 
         '-hwaccel', 'auto', 
+        '-i', moved_filename, 
         '-c:v', 'hevc_nvenc', 
         '-rc:v', 'vbr_hq', 
         '-qmin:v', '22',
@@ -206,7 +207,7 @@ def comcut_and_transcode(input_file, **kwargs):
         '-rc-lookahead', '8', 
         '-weighted_pred', '1',
         out_filename]
-        
+
     res = run(cmd)
 
     # delete original file
