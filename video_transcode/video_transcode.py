@@ -241,7 +241,7 @@ def main():
             comcut_and_transcode.apply_async(
                 (args.filename,), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
-                # eta=schedule(duration),
+                eta=schedule(duration),
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 
