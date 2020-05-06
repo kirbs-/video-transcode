@@ -97,11 +97,11 @@ def comcut(input_file):
     res = run(cmd)
 
 
-def run(cmd):
+def run(cmd, env=None):
     """Utility to execute command on local OS."""
     try:
         logging.info(' '.join(cmd))
-        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env)
         logging.debug(res)
 
         # try:
@@ -195,7 +195,6 @@ def comcut_and_transcode(input_file, **kwargs):
     # transcode to h265
     # cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
     cmd = [
-        'LD_LIBRARY_PATH=/usr/local/cuda/lib64',
         config['FFMPEG_BINARY_PATH'], 
         '-vsync', '0', 
         '-hwaccel', 'auto', 
@@ -208,7 +207,7 @@ def comcut_and_transcode(input_file, **kwargs):
         '-weighted_pred', '1',
         out_filename]
 
-    res = run(cmd)
+    res = run(cmd, os.environ)
 
     # delete original file
     if config['DELETE_SOURCE_AFTER_TRANSCODE']:
