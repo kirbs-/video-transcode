@@ -101,7 +101,7 @@ def run(cmd):
     """Utility to execute command on local OS."""
     try:
         logging.info(' '.join(cmd))
-        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         logging.debug(res)
 
         # try:
