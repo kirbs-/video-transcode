@@ -4,7 +4,7 @@ CELERY_QUEUE: video_transcode
 CELERY_WORKER_NAME: w1@brains
 PLEX_LIBRARY_FOLDER: /home/plex
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
-FFMPEG_BINARY_PATH: ffmpeg
+FFMPEG_BINARY_PATH: /usr/local/bin/ffmpeg
 DELETE_SOURCE_AFTER_TRANSCODE: True
 DEFAULT_ACTION: comcut_and_transcode
 # TASK_LIMIT: 
