@@ -2,8 +2,8 @@ from setuptools import setup
 import sys
 import os
 # from setuptools.command.develop import develop
-from setuptools.command.install import install
-from subprocess import check_call
+# from setuptools.command.install import install
+# from subprocess import check_call
 
 #
 # class PostDevelopCommand(develop):
@@ -21,7 +21,7 @@ from subprocess import check_call
 
 
 setup(name='video_transcode',
-      version='1.1.0',
+      version='1.1.1',
       url='https://github.com/kirbs-/video-transcode',
       description='Video commercial cutting and transcoding stack.',
       author='Chris Kirby',
@@ -29,7 +29,7 @@ setup(name='video_transcode',
       license='MIT',
       packages=['video_transcode'],
       package_data={'video_transcode': [os.path.join('config', '*')]},
-      install_requires=['celery', 'pyyaml>=5.1', 'pendulum', 'moviepy'],
+      install_requires=['celery', 'pyyaml>=5.1', 'pendulum', 'moviepy', 'redis'],
       zip_safe=False,
       # cmdclass={
       #       'install': InstallSystemServiceCommand,
