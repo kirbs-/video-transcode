@@ -1,7 +1,7 @@
-CELERY_BROKER: redis://localhost:6379/0
-CELERY_RESULT_BACKEND: redis://localhost:6379/0
+CELERY_BROKER: redis://redis:6379/0
+CELERY_RESULT_BACKEND: redis://redis:6379/0
 CELERY_QUEUE: video_transcode
-CELERY_WORKER_NAME: w1@brains
+CELERY_WORKER_NAME: celery@brains
 PLEX_LIBRARY_FOLDER: /home/plex
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
 FFMPEG_BINARY_PATH: /usr/local/bin/ffmpeg

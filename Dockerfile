@@ -4,7 +4,7 @@ RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
 RUN yum install -y epel-release
 RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
-RUN yum install -y argtable argtable-devel ffmpeg ffmpeg-devel git autoconf automake yasm
+RUN yum install -y argtable argtable-devel ffmpeg ffmpeg-devel git autoconf automake yasm python3
 
 
 # install pyenv
@@ -30,13 +30,10 @@ RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 RUN git clone https://github.com/BrettSheleski/comchap.git /opt/comchap
 RUN cd /opt/comchap && make && make install
 
-RUN yum install -y python3
-
 # install video-transcode
-RUN pip3 install video_transcode
-# remove redis later
-RUN pip3 install redis
+RUN pip3 install video_transcode 
 COPY video_transcode/config /opt/video_transcode/config/.
+ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
 RUN mkdir /var/run/video_transcode
 
 COPY bootstrap.sh /usr/local/bin
