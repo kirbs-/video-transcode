@@ -17,13 +17,20 @@ import argparse
 
 
 # Load config.yaml
-with open(pkg_resources.resource_filename('video_transcode','config/config.yaml')) as f:
+if os.environ.get('VIDEO_TRANSCODE_CONFIG'):
+    CONFIG_FILE = os.environ.get('VIDEO_TRANSCODE_CONFIG')
+else:
+    CONFIG_FILE = pkg_resources.resource_filename('video_transcode','config/config.yaml')
+
+with open(CONFIG_FILE) as f:
     config = yaml.full_load(f.read())
     os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
     os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64'
 
+
 # import moviepy after setting FFMPEG_BINARY
 import moviepy.editor as me
+
 
 parser = argparse.ArgumentParser()
 
