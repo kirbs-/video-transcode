@@ -1,5 +1,7 @@
-CELERY_BROKER: redis://redis:6379/0
-CELERY_RESULT_BACKEND: redis://redis:6379/0
+CONTAINER_CELERY_BROKER: redis://redis:6379/0
+CONTAINER_CELERY_RESULT_BACKEND: redis://redis:6379/0
+CELERY_BROKER: redis://localhost:6124/0
+CELERY_RESULT_BACKEND: redis://localhost:6124/0
 CELERY_QUEUE: video_transcode
 CELERY_WORKER_NAME: celery@brains
 PLEX_LIBRARY_FOLDER: /home/plex

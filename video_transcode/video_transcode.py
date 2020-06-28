@@ -24,12 +24,8 @@ else:
 
 with open(CONFIG_FILE) as f:
     config = yaml.full_load(f.read())
-    os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
+    # os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
     os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64'
-
-
-# import moviepy after setting FFMPEG_BINARY
-import moviepy.editor as me
 
 
 parser = argparse.ArgumentParser()
@@ -42,20 +38,16 @@ parser.add_argument("-n", "--now",
                     action='store_true',
                     help="Run action now; don't schedule.")
 
+# print(os.environ.get('VIDEO_TRANSCODE_MODE'))
+if os.environ.get('VIDEO_TRANSCODE_MODE'):
+    os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
+    app = Celery(config['CELERY_QUEUE'], broker=config['CONTAINER_CELERY_BROKER'], backend=config['CONTAINER_CELERY_RESULT_BACKEND'])
+else:
+    app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'], backend=config['CELERY_RESULT_BACKEND'])
 
+# import moviepy after setting FFMPEG_BINARY
+import moviepy.editor as me
 
-#FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
-#log_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-#logging.basicConfig(level=logging.INFO)
-#logger = logging.getLogger(__name__)
-#handler = logging.FileHandler('log-{}.log'.format(log_timestamp))
-#handler.setLevel(logging.INFO)
-#handler.setFormatter(logging.Formatter(FORMAT))
-#logger.addHandler(handler)
-# CELERY_BROKER = 'redis://localhost:6379/0'
-
-app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'], backend=config['CELERY_RESULT_BACKEND'])
 # app.autodiscover_tasks(['video_transcode.video_transcode'])
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
