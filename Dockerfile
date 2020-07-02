@@ -10,7 +10,7 @@ RUN yum install -y argtable argtable-devel ffmpeg ffmpeg-devel git autoconf auto
 # install pyenv
 # RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv
 
-# install ffmpeg with cuda support
+# build ffmpeg with cuda support
 RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
 RUN cd nv-codec-headers && make && make install && cd ../
 RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
@@ -30,11 +30,13 @@ RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 RUN git clone https://github.com/BrettSheleski/comchap.git /opt/comchap
 RUN cd /opt/comchap && make && make install
 
-# install video-transcode
-RUN pip3 install video_transcode 
+# install and configure video-transcode
+RUN pip3 install git+https://github.com/kirbs-/video-transcode.git@feature/enhanced_schedule
 COPY video_transcode/config /opt/video_transcode/config/.
-ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
 RUN mkdir /var/run/video_transcode
+ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
+ENV VIDEO_TRANSCODE_MODE=CONTAINER
+ENV NVIDIA_DRIVER_CAPABILITIES=video,compute,utility
 
 COPY bootstrap.sh /usr/local/bin
 ENTRYPOINT ["bash", "bootstrap.sh"]
