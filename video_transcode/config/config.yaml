@@ -1,12 +1,25 @@
+# redis connection from inside container
 CONTAINER_CELERY_BROKER: redis://redis:6379/0
 CONTAINER_CELERY_RESULT_BACKEND: redis://redis:6379/0
+
+# redis conneection from host
 CELERY_BROKER: redis://localhost:6124/0
 CELERY_RESULT_BACKEND: redis://localhost:6124/0
-CELERY_QUEUE: video_transcode
-CELERY_WORKER_NAME: celery@brains
+
+# path to plex TV show library
 PLEX_LIBRARY_FOLDER: /home/plex
+
+# celery queue config
+CELERY_QUEUE: video_transcode      
+CELERY_WORKER_NAME: celery@brains
+
+# absolute path to comcut binary
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
+
+# absolute path to ffmpeg binary
 FFMPEG_BINARY_PATH: /usr/local/bin/ffmpeg
+
+# transcoding options
 DELETE_SOURCE_AFTER_TRANSCODE: True
 DEFAULT_ACTION: comcut_and_transcode
 # TASK_LIMIT: 
