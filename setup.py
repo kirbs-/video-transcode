@@ -21,7 +21,7 @@ import os
 
 
 setup(name='video_transcode',
-      version='1.1.1',
+      version='1.1.2',
       url='https://github.com/kirbs-/video-transcode',
       description='Video commercial cutting and transcoding stack.',
       author='Chris Kirby',
