@@ -14,8 +14,7 @@ services:
             - "redis"
         volumes: 
           # volumes are mounted with /host/path/to/folder:/container/path/to/folder
-          # REQUIRED
-          # Folder containing Plex DVR recordings on host; map to /home/plex
+          # REQUIRED! Folder containing Plex DVR recordings on host; map to /home/plex
           - ./plex:/home/plex
           # OPTIONAL
           # specify the config folder location on host machine and map to /opt/video_transcode/config 
