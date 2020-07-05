@@ -1,0 +1,22 @@
+version: '3'
+services:
+    redis:
+        restart: always
+        image: redis:alpine
+        ports:
+            - "6124:6379"
+    video:
+        build: .
+        # ports:
+        #     - "8080:8080"
+        restart: unless-stopped
+        depends_on:
+            - "redis"
+        volumes: 
+          # volumes are mounted with /host/path/to/folder:/container/path/to/folder
+          # REQUIRED
+          # Folder containing Plex DVR recordings on host; map to /home/plex
+          - ./plex:/home/plex
+          # OPTIONAL
+          # specify the config folder location on host machine and map to /opt/video_transcode/config 
+          - ./video_transcode/config:/opt/video_transcode/config

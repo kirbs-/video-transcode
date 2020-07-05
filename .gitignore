@@ -121,6 +121,5 @@ ENV/
 *.log
 .idea
 
-rpi2mqtt/config.yaml
-rpi2mqtt/ca-chain.crt
+*.tar.gz
 

@@ -17,8 +17,16 @@ import argparse
 
 
 # Load config.yaml
-with open(pkg_resources.resource_filename('video_transcode','config/config.yaml')) as f:
+if os.environ.get('VIDEO_TRANSCODE_CONFIG'):
+    CONFIG_FILE = os.environ.get('VIDEO_TRANSCODE_CONFIG')
+else:
+    CONFIG_FILE = pkg_resources.resource_filename('video_transcode','config/config.yaml')
+
+with open(CONFIG_FILE) as f:
     config = yaml.full_load(f.read())
+    # os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64'
+
 
 parser = argparse.ArgumentParser()
 
@@ -26,20 +34,20 @@ parser.add_argument('filename')
 parser.add_argument("-a", "--action",
                     help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
                     default=config['DEFAULT_ACTION'])
+parser.add_argument("-n", "--now",
+                    action='store_true',
+                    help="Run action now; don't schedule.")
 
+# print(os.environ.get('VIDEO_TRANSCODE_MODE'))
+if os.environ.get('VIDEO_TRANSCODE_MODE'):
+    os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
+    app = Celery(config['CELERY_QUEUE'], broker=config['CONTAINER_CELERY_BROKER'], backend=config['CONTAINER_CELERY_RESULT_BACKEND'])
+else:
+    app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'], backend=config['CELERY_RESULT_BACKEND'])
 
-#FORMAT = '%(asctime)-15s %(levelname)-12s %(message)s'
-#log_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+# import moviepy after setting FFMPEG_BINARY
+import moviepy.editor as me
 
-#logging.basicConfig(level=logging.INFO)
-#logger = logging.getLogger(__name__)
-#handler = logging.FileHandler('log-{}.log'.format(log_timestamp))
-#handler.setLevel(logging.INFO)
-#handler.setFormatter(logging.Formatter(FORMAT))
-#logger.addHandler(handler)
-# CELERY_BROKER = 'redis://localhost:6379/0'
-
-app = Celery(config['CELERY_QUEUE'], broker=config['CELERY_BROKER'])
 # app.autodiscover_tasks(['video_transcode.video_transcode'])
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
@@ -84,15 +92,15 @@ def comcut(input_file):
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], '--ffmpeg=/bin/ffmpeg', moved_filename]
     res = run(cmd)
 
 
-def run(cmd):
+def run(cmd, env=None):
     """Utility to execute command on local OS."""
     try:
         logging.info(' '.join(cmd))
-        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env)
         logging.debug(res)
 
         # try:
@@ -104,21 +112,54 @@ def run(cmd):
         logging.info(e.cmd)
 
 
-def schedule():
+# def schedule():
+#     """
+#     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
+#     """
+
+#     c = inspect()
+#     task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+
+#     tomorrow = pendulum.tomorrow()
+#     # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+#     # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
+#     minute_offset = task_cnt % 24 * 20
+#     scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
+#     # print(str(scheduled_start))
+#     return scheduled_start
+
+def schedule(duration):
     """
     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
     """
-
     c = inspect()
-    task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+    tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
 
-    tomorrow = pendulum.tomorrow()
-    # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-    # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-    minute_offset = task_cnt % 24 * 20
-    scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
+    scheduled_task_duration = sum(map(lambda v: v['request']['kwargs']['vt_duration'], tasks))
 
-    return scheduled_start
+    now = pendulum.now()
+    window_start = now.replace(hour=config['SCHEDULE_START'], minute=0, second=0)
+    window_end = now.replace(hour=config['SCHEDULE_END'], minute=0, second=0)
+
+    # Move to next window if now is later than today's window end.
+    if now > window_end:
+        window_start += timedelta(days=1)
+        window_end += timedelta(days=1)
+
+    # how much of today's processing window is remaining?
+    while True:
+        window_size = (window_end - window_start).seconds
+        remaining_window = scheduled_task_duration - window_size
+        
+#         print(f'Window size {window_size}')
+#         print(f'Remaining window {remaining_window}')
+
+        if scheduled_task_duration + duration <= window_size:
+            return window_start + timedelta(seconds=(scheduled_task_duration))
+        else:
+            window_start += timedelta(days=1)
+            window_end += timedelta(days=1)
+            scheduled_task_duration -= window_size
 
 
 # def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
@@ -138,7 +179,7 @@ def schedule():
 #     return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
 
 @app.task
-def comcut_and_transcode(input_file):
+def comcut_and_transcode(input_file, **kwargs):
     """
     Passes input_file name from Plex to comcut then to ffmpeg.
     :param input_file:
@@ -151,12 +192,30 @@ def comcut_and_transcode(input_file):
     res = run(cmd)
 
     # transcode to h265
-    cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
-    res = run(cmd)
+    # cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
+    cmd = [
+        config['FFMPEG_BINARY_PATH'], 
+        '-vsync', '0', 
+        '-hwaccel', 'auto', 
+        '-i', moved_filename, 
+        '-c:v', 'hevc_nvenc', 
+        '-rc:v', 'vbr_hq', 
+        '-qmin:v', '22',
+        '-qmax:v', '30', 
+        '-rc-lookahead', '8', 
+        '-weighted_pred', '1',
+        out_filename]
+
+    res = run(cmd, os.environ)
 
     # delete original file
     if config['DELETE_SOURCE_AFTER_TRANSCODE']:
         os.remove(moved_filename)
+
+
+def video_metadata(filename):
+    clip = me.VideoFileClip(filename)
+    return clip.size, clip.duration
 
 
 def main():
@@ -165,16 +224,27 @@ def main():
     if args.action == 'transcode':
         pass
     elif args.action == 'comcut':
-        comcut.apply_async((args.filename,), eta=schedule())
+        if args.now:
+            comcut.apply_async((args.filename,))
+        else:
+            comcut.apply_async((args.filename,), eta=schedule(5*60))
     elif args.action == 'comcut_and_transcode':
-        comcut_and_transcode.apply_async((args.filename,), eta=schedule())
+        frame_size, duration = video_metadata(args.filename)
+
+        if args.now:
+            comcut_and_transcode.apply_async(
+                (args.filename,), 
+                {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+                headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+        else:
+            comcut_and_transcode.apply_async(
+                (args.filename,), 
+                {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+                eta=schedule(duration),
+                headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+
 
 if __name__ == '__main__':
     main()
-#     if len(sys.argv) == 2:
-#         comcut.apply_async((sys.argv[1],), eta=schedule())
-#     else:
-#         comcut_and_transcode.apply_async((sys.argv[1],))
 
-#     sys.exit()
 
