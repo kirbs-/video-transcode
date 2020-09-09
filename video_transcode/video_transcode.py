@@ -222,8 +222,7 @@ def is_regex(filename):
 
 def add_to_queue(filename, args):
     """Adds a single file to processing queue."""
-    args = parser.parse_args()
-
+    
     if args.action == 'transcode':
         pass # TODO
     elif args.action == 'comcut':
