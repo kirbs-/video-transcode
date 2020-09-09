@@ -31,7 +31,7 @@ RUN git clone https://github.com/BrettSheleski/comchap.git /opt/comchap
 RUN cd /opt/comchap && make && make install
 
 # install and configure video-transcode
-RUN pip3 install git+https://github.com/kirbs-/video-transcode.git@feature/enhanced_schedule
+RUN pip3 install git+https://github.com/kirbs-/video-transcode.git
 COPY video_transcode/config /opt/video_transcode/config/.
 RUN mkdir /var/run/video_transcode
 ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
