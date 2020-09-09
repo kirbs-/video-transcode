@@ -14,9 +14,14 @@ import re
 import yaml
 import pkg_resources
 import argparse
+import logging
+
+
+logging.basicConfig(level=logging.WARN)
 
 
 # Load config.yaml
+# if no env var use package default.
 if os.environ.get('VIDEO_TRANSCODE_CONFIG'):
     CONFIG_FILE = os.environ.get('VIDEO_TRANSCODE_CONFIG')
 else:
@@ -28,6 +33,7 @@ with open(CONFIG_FILE) as f:
     os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64'
 
 
+# setup argument parser
 parser = argparse.ArgumentParser()
 
 parser.add_argument('filename')
@@ -36,9 +42,13 @@ parser.add_argument("-a", "--action",
                     default=config['DEFAULT_ACTION'])
 parser.add_argument("-n", "--now",
                     action='store_true',
-                    help="Run action now; don't schedule.")
+                    help="Run action now, don't schedule.")
+# parser.add_argument('--add',
+#                     action='store_true',
+#                     help="Add files to queue. This takes the first arguement as an input in to pathlib.Path.glob.")
 
-# print(os.environ.get('VIDEO_TRANSCODE_MODE'))
+
+logging.debug(f"Transcode mode = {os.environ.get('VIDEO_TRANSCODE_MODE')}")
 if os.environ.get('VIDEO_TRANSCODE_MODE'):
     os.environ['FFMPEG_BINARY'] = config['FFMPEG_BINARY_PATH']
     app = Celery(config['CELERY_QUEUE'], broker=config['CONTAINER_CELERY_BROKER'], backend=config['CONTAINER_CELERY_RESULT_BACKEND'])
@@ -48,13 +58,26 @@ else:
 # import moviepy after setting FFMPEG_BINARY
 import moviepy.editor as me
 
-# app.autodiscover_tasks(['video_transcode.video_transcode'])
+
+# update celery task visibiity_timeout to 1 week. 
 app.conf.update(
     broker_transport_options = {'visibility_timeout': 604800}	
 )
 
 
 def translate_filenames(input_file):
+    """Derives file path from video file's base name.
+
+    Plex records shows in a temp location then moves the file into a libary upon completion. It's this 
+    temp file's path that is passed to post processing scripts. Since video-transcode time shifts transcoding,
+    the temp file path Plex sends isn't valid when video-transcode opens the file.
+
+    Args:
+        input_file (str): Path to file to transcode.
+
+    Returns:
+        tuple: (str, str) output file name, file name in plex library
+    """
     logging.info('Processing file {}'.format(input_file))
     f = pathlib.Path(input_file)
 
@@ -67,13 +90,14 @@ def translate_filenames(input_file):
 
     filename_split = f.name.split(' - ')
 
-    # extract season
+    # extract season from file name if file is in S01E01 format
     matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
 
+    # if not in S01E01 format, check if file is in yyyy-mm-dd format
     if not matched_season:
         matched_season = re.search('(\d*)-(\d*)-(\d*)', filename_split[1])
 
-    folder = ['/home', 'plex']
+    folder = ['/home', 'plex'] # TODO setup library path via config
     folder.append(filename_split[0])
     folder.append('Season {}'.format(matched_season[1]))
     folder.append(f.name)
@@ -83,6 +107,7 @@ def translate_filenames(input_file):
     out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
 
     return out_filename, moved_filename
+
 
 @app.task
 def comcut(input_file):
@@ -102,31 +127,23 @@ def run(cmd, env=None):
         logging.info(' '.join(cmd))
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env)
         logging.debug(res)
-
-        # try:
-        #     return json.loads(res)
-        # except:
         return res
     except subprocess.CalledProcessError as e:
-        logging.info(e.output)
-        logging.info(e.cmd)
+        logging.warn(e.output)
+        logging.warn(e.cmd)
 
 
-# def schedule():
-#     """
-#     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
-#     """
+def search(file_pattern):
+    """Absolute path/s for given file pattern.
+    
+    Args:
+        str: file pattern. See pathlib.Path.glob
 
-#     c = inspect()
-#     task_cnt = len(c.scheduled()[config['CELERY_WORKER_NAME']])
+    Returns:
+        iterator: matched files
+    """
+    return map(str, pathlib.Path(os.getcwd()).glob(file_pattern))
 
-#     tomorrow = pendulum.tomorrow()
-#     # tomorrow_midnight = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-#     # tomorrow_8am = now.replace(hour=8, minute=0, second=0, microsecond=0) + timedelta(days=int(task_cnt/24))
-#     minute_offset = task_cnt % 24 * 20
-#     scheduled_start = tomorrow + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-#     # print(str(scheduled_start))
-#     return scheduled_start
 
 def schedule(duration):
     """
@@ -150,9 +167,6 @@ def schedule(duration):
     while True:
         window_size = (window_end - window_start).seconds
         remaining_window = scheduled_task_duration - window_size
-        
-#         print(f'Window size {window_size}')
-#         print(f'Remaining window {remaining_window}')
 
         if scheduled_task_duration + duration <= window_size:
             return window_start + timedelta(seconds=(scheduled_task_duration))
@@ -161,22 +175,6 @@ def schedule(duration):
             window_end += timedelta(days=1)
             scheduled_task_duration -= window_size
 
-
-# def eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am):
-#     """Keeps track of the number of comcut or transcode tasks in queue and schedules next task accordingly."""
-
-#     if scheduled_start < tomorrow_8am:
-#         return scheduled_start
-
-#     if task_cnt > 24:
-#         tomorrow_midnight += timedelta(days=1)
-#         tomorrow_8am += timedelta(days=1)
-#         task_cnt -= 24
-
-#     minute_offset = task_cnt * 20
-#     scheduled_start = tomorrow_midnight + timedelta(minutes=minute_offset) + timedelta(seconds=10)
-
-#     return eta(task_cnt, scheduled_start, tomorrow_midnight, tomorrow_8am)
 
 @app.task
 def comcut_and_transcode(input_file, **kwargs):
@@ -218,11 +216,16 @@ def video_metadata(filename):
     return clip.size, clip.duration
 
 
-def main():
+def is_regex(filename):
+    return "*" in filename
+
+
+def add_to_queue(filename, args):
+    """Adds a single file to processing queue."""
     args = parser.parse_args()
 
     if args.action == 'transcode':
-        pass
+        pass # TODO
     elif args.action == 'comcut':
         if args.now:
             comcut.apply_async((args.filename,))
@@ -242,6 +245,41 @@ def main():
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 eta=schedule(duration),
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+
+
+def main():
+    args = parser.parse_args()
+
+    # if is_regex(args.filename):
+    #     # Find matching files
+    #     files = search(args.filename)
+    # else:
+    #     files = [args.filename]
+
+    for f in search(args.filename):
+        add_to_queue(f, args)
+
+    # if args.action == 'transcode':
+    #     pass
+    # elif args.action == 'comcut':
+    #     if args.now:
+    #         comcut.apply_async((args.filename,))
+    #     else:
+    #         comcut.apply_async((args.filename,), eta=schedule(5*60))
+    # elif args.action == 'comcut_and_transcode':
+    #     frame_size, duration = video_metadata(args.filename)
+
+    #     if args.now:
+    #         comcut_and_transcode.apply_async(
+    #             (args.filename,), 
+    #             {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+    #             headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+    #     else:
+    #         comcut_and_transcode.apply_async(
+    #             (args.filename,), 
+    #             {'vt_frame_size': frame_size, 'vt_duration': duration}, 
+    #             eta=schedule(duration),
+    #             headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 
 if __name__ == '__main__':
