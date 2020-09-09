@@ -222,25 +222,25 @@ def is_regex(filename):
 
 def add_to_queue(filename, args):
     """Adds a single file to processing queue."""
-    
+
     if args.action == 'transcode':
         pass # TODO
     elif args.action == 'comcut':
         if args.now:
-            comcut.apply_async((args.filename,))
+            comcut.apply_async((filename,))
         else:
-            comcut.apply_async((args.filename,), eta=schedule(5*60))
+            comcut.apply_async((filename,), eta=schedule(5*60))
     elif args.action == 'comcut_and_transcode':
-        frame_size, duration = video_metadata(args.filename)
+        frame_size, duration = video_metadata(filename)
 
         if args.now:
             comcut_and_transcode.apply_async(
-                (args.filename,), 
+                (filename,), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
         else:
             comcut_and_transcode.apply_async(
-                (args.filename,), 
+                (filename,), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 eta=schedule(duration),
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
