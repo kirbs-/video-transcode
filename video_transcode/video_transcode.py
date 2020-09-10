@@ -36,7 +36,8 @@ with open(CONFIG_FILE) as f:
 # setup argument parser
 parser = argparse.ArgumentParser()
 
-parser.add_argument('filename')
+parser.add_argument('filename',
+                    nargs='+')
 parser.add_argument("-a", "--action",
                     help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
                     default=config['DEFAULT_ACTION'])
@@ -133,18 +134,6 @@ def run(cmd, env=None):
         logging.warn(e.cmd)
 
 
-def search(file_pattern):
-    """Absolute path/s for given file pattern.
-    
-    Args:
-        str: file pattern. See pathlib.Path.glob
-
-    Returns:
-        iterator: matched files
-    """
-    return map(str, pathlib.Path(os.getcwd()).glob(file_pattern))
-
-
 def schedule(duration):
     """
     Used to limit time of day tasks can execute. Currenty set to run tasks between midnight and 8am daily.
@@ -220,6 +209,18 @@ def is_regex(filename):
     return "*" in filename
 
 
+def search(file_pattern):
+    """Absolute path/s for given file pattern.
+    
+    Args:
+        str: file pattern. See pathlib.Path.glob
+
+    Returns:
+        iterator: matched files
+    """
+    return map(str, pathlib.Path(os.getcwd()).glob(file_pattern))
+
+
 def add_to_queue(filename, args):
     """Adds a single file to processing queue."""
 
@@ -249,36 +250,10 @@ def add_to_queue(filename, args):
 def main():
     args = parser.parse_args()
 
-    # if is_regex(args.filename):
-    #     # Find matching files
-    #     files = search(args.filename)
-    # else:
-    #     files = [args.filename]
-
-    for f in search(args.filename):
-        add_to_queue(f, args)
-
-    # if args.action == 'transcode':
-    #     pass
-    # elif args.action == 'comcut':
-    #     if args.now:
-    #         comcut.apply_async((args.filename,))
-    #     else:
-    #         comcut.apply_async((args.filename,), eta=schedule(5*60))
-    # elif args.action == 'comcut_and_transcode':
-    #     frame_size, duration = video_metadata(args.filename)
-
-    #     if args.now:
-    #         comcut_and_transcode.apply_async(
-    #             (args.filename,), 
-    #             {'vt_frame_size': frame_size, 'vt_duration': duration}, 
-    #             headers={'vt_frame_size': frame_size, 'vt_duration': duration})
-    #     else:
-    #         comcut_and_transcode.apply_async(
-    #             (args.filename,), 
-    #             {'vt_frame_size': frame_size, 'vt_duration': duration}, 
-    #             eta=schedule(duration),
-    #             headers={'vt_frame_size': frame_size, 'vt_duration': duration})
+    for f in args.filename:
+        # convert file name to absolute path
+        filename = str(pathlib.Path(f).absolute())
+        add_to_queue(filename, args)
 
 
 if __name__ == '__main__':
