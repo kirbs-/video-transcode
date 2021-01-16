@@ -127,7 +127,7 @@ def run(cmd, env=None):
     try:
         logging.info(' '.join(cmd))
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env)
-        logging.debug(res)
+        logging.info(res)
         return res
     except subprocess.CalledProcessError as e:
         logging.warn(e.output)
@@ -196,7 +196,7 @@ def comcut_and_transcode(input_file, **kwargs):
     res = run(cmd, os.environ)
 
     # delete original file
-    if config['DELETE_SOURCE_AFTER_TRANSCODE']:
+    if config['DELETE_SOURCE_AFTER_TRANSCODE']: # TODO check res and only delete if successful
         os.remove(moved_filename)
 
 
