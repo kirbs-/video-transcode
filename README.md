@@ -5,25 +5,44 @@ video_transcode removes commercials and transcodes Plex recorded TV shows to sma
 
 The service also supports Nvidia GPU transcoding, controls how intensive transcoding is on a machine and what time of day trnascoding can happen. e.g. only transcode overnight, limit 1 transcode at a time, etc.
  
+
 - Quickstart
-- Usage
-- Docker
-- Configuration
+- How do I use this?
+- Docker Setup
+- Configuration Options
 - Manual installation
 
 
 # Quickstart
-1. Install video_transcode `pip install video_transcode`
-2. Update Plex DVR folder volume in docker-compose.yaml
+1. Install video_transcode with `pip install video_transcode`
+2. Create docker-compose.yaml
+    ```
+    version: '3'
+    services:
+        redis:
+            restart: unless-stopped
+            image: redis:alpine
+            ports:
+                - "6124:6379"
+        video:
+            image: k1rbs/video-transcode
+            restart: unless-stopped
+            depends_on:
+                - "redis"
+            volumes: 
+                # REQUIRED! Folder containing Plex DVR recordings on host must be maped to /home/plex inside container
+                - ./plex:/home/plex
+
+    ```
 3. Start `docker-compose up`
-4. Follow Plex postprocessing setup steps
+4. Add a video file to the transcoding queue with `video-transcode "MacGyver - S04E01 - Fire + Ashes + Legacy = Phoenix.ts"`
 
 
 # Usage
-#### Basic usage
+## Basic usage
 `video-transcode input_file.ts`
 
-#### Plex postprocessing setup 
+## Plex postprocessing setup 
 Configuring Plex to use video-transcode for post processing requires:
 1. Symlink video-transcode executable to DVR post processing script folder. The exact path to this folder is visible within Plex DVR settings under Postprocessing Script (see red highlight below). 
 ```bash
