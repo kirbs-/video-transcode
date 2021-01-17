@@ -132,6 +132,8 @@ def run(cmd, env=None):
     except subprocess.CalledProcessError as e:
         logging.warn(e.output)
         logging.warn(e.cmd)
+        logging.warn(e.returncode)
+        return e.returncode
 
 
 def schedule(duration):
@@ -179,7 +181,6 @@ def comcut_and_transcode(input_file, **kwargs):
     res = run(cmd)
 
     # transcode to h265
-    # cmd = [config['FFMPEG_BINARY_PATH'], '-i', moved_filename, '-c:v', 'libx265', '-crf', '24', '-c:a', 'copy', out_filename]
     cmd = [
         config['FFMPEG_BINARY_PATH'], 
         '-vsync', '0', 
@@ -195,9 +196,13 @@ def comcut_and_transcode(input_file, **kwargs):
 
     res = run(cmd, os.environ)
 
+    logging.info(res)
+
     # delete original file
-    if config['DELETE_SOURCE_AFTER_TRANSCODE']: # TODO check res and only delete if successful
+    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and res: 
         os.remove(moved_filename)
+    elif not res:
+        logging.info('Error processing file. Skipping source deletion.')
 
 
 def video_metadata(filename):
