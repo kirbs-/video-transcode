@@ -199,9 +199,9 @@ def comcut_and_transcode(input_file, **kwargs):
     logging.info(res)
 
     # delete original file
-    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and res: 
+    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and res == 0: 
         os.remove(moved_filename)
-    elif not res:
+    elif res != 0:
         logging.info('Error processing file. Skipping source deletion.')
 
 
