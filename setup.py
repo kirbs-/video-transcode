@@ -21,7 +21,7 @@ import os
 
 
 setup(name='video_transcode',
-      version='1.2.3',
+      version='1.3.0',
       url='https://github.com/kirbs-/video-transcode',
       description='Video commercial cutting and transcoding stack.',
       author='Chris Kirby',
@@ -29,7 +29,7 @@ setup(name='video_transcode',
       license='MIT',
       packages=['video_transcode'],
       package_data={'video_transcode': [os.path.join('config', '*')]},
-      install_requires=['celery', 'pyyaml>=5.1', 'pendulum', 'moviepy', 'redis'],
+      install_requires=['celery==4.4.7', 'pyyaml>=5.1', 'pendulum', 'moviepy', 'redis'],
       zip_safe=False,
       # cmdclass={
       #       'install': InstallSystemServiceCommand,
