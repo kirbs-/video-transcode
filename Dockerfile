@@ -1,4 +1,4 @@
-FROM nvidia/cuda:10.2-devel-centos7 
+FROM nvidia/cuda:11.2.0-base-centos7 
 
 RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
@@ -16,7 +16,7 @@ RUN cd nv-codec-headers && make && make install && cd ../
 RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig 
 RUN cd /opt/ffmpeg \ 
-    && ./configure --enable-cuda-sdk --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \
+    && ./configure --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \
     && make -j 10 \ 
     && cd ../
 RUN ln -s /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
@@ -30,8 +30,13 @@ RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 RUN git clone https://github.com/BrettSheleski/comchap.git /opt/comchap
 RUN cd /opt/comchap && make && make install
 
+# set Python encoding default
+ENV LC_ALL=en_US.utf-8
+ENV LANG=en_US.utf-8
+
 # install and configure video-transcode
-RUN pip3 install git+https://github.com/kirbs-/video-transcode.git
+RUN pip3 install git+https://github.com/kirbs-/video-transcode.git --no-cache
+RUN echo stuff
 COPY video_transcode/config /opt/video_transcode/config/.
 RUN mkdir /var/run/video_transcode
 ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml

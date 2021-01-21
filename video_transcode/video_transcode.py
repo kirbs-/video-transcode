@@ -176,6 +176,8 @@ def comcut_and_transcode(input_file, **kwargs):
     """
     out_filename, moved_filename = translate_filenames(input_file)
 
+    # TODO check moved_filename exists here.
+
     # cut commercials
     cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
     res = run(cmd)
@@ -187,7 +189,7 @@ def comcut_and_transcode(input_file, **kwargs):
         '-hwaccel', 'auto', 
         '-i', moved_filename, 
         '-c:v', 'hevc_nvenc', 
-        '-rc:v', 'vbr_hq', 
+        # '-rc:v', 'vbr_hq', 
         '-qmin:v', '22',
         '-qmax:v', '30', 
         '-rc-lookahead', '8', 
