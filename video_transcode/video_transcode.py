@@ -186,7 +186,7 @@ def comcut_and_transcode(input_file, **kwargs):
     # transcode to h265
     cmd = [
         config['FFMPEG_BINARY_PATH'], 
-        '-hide_banner'
+        '-hide_banner',
         '-loglevel', 'panic', 
         '-vsync', '0', 
         '-hwaccel', 'auto', 
