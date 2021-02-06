@@ -19,6 +19,19 @@ COMCUT_BINARY_PATH: /usr/local/bin/comcut
 # absolute path to ffmpeg binary
 FFMPEG_BINARY_PATH: /usr/local/bin/ffmpeg
 
+# ffmpeg options; must include 'i {input_filename}'
+FFMPEG_OPTIONS:
+    - '-hide_banner'
+    - '-loglevel error'
+    - '-vsync 0'
+    - '-hwaccel auto'
+    - '-i {input_filename}'
+    - '-c:v hevc_nvenc'
+    - '-qmin:v 22'
+    - '-qmax:v 30'
+    - '-rc-lookahead 8' 
+    - '-weighted_pred 1'
+
 # transcoding options
 DELETE_SOURCE_AFTER_TRANSCODE: True
 DEFAULT_ACTION: comcut_and_transcode

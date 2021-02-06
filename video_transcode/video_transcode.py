@@ -184,20 +184,26 @@ def comcut_and_transcode(input_file, **kwargs):
     res = run(cmd)
 
     # transcode to h265
-    cmd = [
-        config['FFMPEG_BINARY_PATH'], 
-        '-hide_banner',
-        '-loglevel', 'panic', 
-        '-vsync', '0', 
-        '-hwaccel', 'auto', 
-        '-i', moved_filename, 
-        '-c:v', 'hevc_nvenc', 
-        # '-rc:v', 'vbr_hq', 
-        '-qmin:v', '22',
-        '-qmax:v', '30', 
-        '-rc-lookahead', '8', 
-        '-weighted_pred', '1',
-        out_filename]
+    cmd = [config['FFMPEG_BINARY_PATH']]
+    for opt in y['FFMPEG_OPTIONS']:
+        if "{moved_filename}" in opt:
+            # print(opt)
+            cmd.append(opt.format(moved_filename=moved_filename))
+        else:
+            cmd.append(opt)
+    cmd.append(out_filename)
+        # '-hide_banner',
+        # '-loglevel', 'error', 
+        # '-vsync', '0', 
+        # '-hwaccel', 'auto', 
+        # '-i', moved_filename, 
+        # '-c:v', 'hevc_nvenc', 
+        # # '-rc:v', 'vbr_hq', 
+        # '-qmin:v', '22',
+        # '-qmax:v', '30', 
+        # '-rc-lookahead', '8', 
+        # '-weighted_pred', '1',
+        # out_filename]
 
     res = run(cmd, os.environ)
 
