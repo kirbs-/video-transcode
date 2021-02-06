@@ -130,9 +130,10 @@ def run(cmd, env=None):
         logging.info(res)
         return res
     except subprocess.CalledProcessError as e:
-        logging.warn(e.output)
-        logging.warn(e.cmd)
-        logging.warn(e.returncode)
+        logging.warn("Error running command.")
+        logging.warn("Command throwing error {}".format(e.cmd))
+        logging.warn("Return code {}".format(e.returncode))
+        logging.warn("Message: {}".format(e.output))
         return e.returncode
 
 
@@ -198,10 +199,12 @@ def comcut_and_transcode(input_file, **kwargs):
 
     res = run(cmd, os.environ)
 
-    logging.info(res)
+    # logging.info(res)
 
     # delete original file
-    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and res == 0: 
+    res_type = type(res)
+    logging.info("FFMPEG command result type is: {}".format(res_type))
+    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and type(res) == str: 
         os.remove(moved_filename)
     elif res != 0:
         logging.info('Error processing file. Skipping source deletion.')

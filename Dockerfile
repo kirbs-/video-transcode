@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.2.0-base-centos7 
+FROM nvidia/cuda:11.2.0-devel-centos7 
 
 RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
@@ -36,7 +36,7 @@ ENV LANG=en_US.utf-8
 
 # install and configure video-transcode
 RUN pip3 install git+https://github.com/kirbs-/video-transcode.git --no-cache
-RUN echo stuff
+# RUN echo stuff
 COPY video_transcode/config /opt/video_transcode/config/.
 RUN mkdir /var/run/video_transcode
 ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
