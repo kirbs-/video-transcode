@@ -185,7 +185,7 @@ def comcut_and_transcode(input_file, **kwargs):
 
     # transcode to h265
     cmd = [config['FFMPEG_BINARY_PATH']]
-    for opt in y['FFMPEG_OPTIONS']:
+    for opt in config['FFMPEG_OPTIONS']:
         if "{moved_filename}" in opt:
             # print(opt)
             cmd.append(opt.format(moved_filename=moved_filename))
