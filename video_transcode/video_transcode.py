@@ -96,7 +96,7 @@ def translate_filenames(input_file):
     show_name, episode_number, episode_name = filename_split
     if config['IGNORE_YEAR_IN_SHOW_NAME'] and re.search('\(\d+\)', show_name):
         # make dict of show folders w/o year -> show folders
-        folders_map = {re.sub('\(\d+\)', '', folder): folder for folder in list(pathlib.Path(config['PLEX_LIBRARY_FOLDER']).iterdir())}
+        folders_map = {re.sub('\(\d+\)', '', folder): folder for folder in pathlib.Path(config['PLEX_LIBRARY_FOLDER']).iterdir()}
         # update show_name with folder from map, if no match, default back to show name from input filename.
         show_name = folders_map.get(re.sub('\(\d+\)', '', show_name), show_name)
         
