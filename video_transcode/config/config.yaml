@@ -40,3 +40,5 @@ DEFAULT_ACTION: comcut_and_transcode
 SCHEDULE_START: 0
 # hour to stop transcoding (24 hr)
 SCHEDULE_END: 8
+# Consider year in show name when searching plex library
+IGNORE_YEAR_IN_SHOW_NAME: True

@@ -89,17 +89,27 @@ def translate_filenames(input_file):
     # print(filename)
     logging.info("Input file: {}".format(input_file))
 
+    # split filename into show - season/episode number (S01E01) - episode title parts
     filename_split = f.name.split(' - ')
+    print(filename_split)
+    
+    show_name, episode_number, episode_name = filename_split
+    if config['IGNORE_YEAR_IN_SHOW_NAME'] and re.search('\(\d+\)', show_name):
+        # make dict of show folders w/o year -> show folders
+        folders_map = {re.sub('\(\d+\)', '', folder): folder for folder in folders}
+        # update show_name with folder from map, if no match, default back to show name from input filename.
+        show_name = folders_map.get(re.sub('\(\d+\)', '', show_name), show_name)
+        
 
     # extract season from file name if file is in S01E01 format
-    matched_season = re.search('S(\d*)E(\d*)', filename_split[1])
+    matched_season = re.search('S(\d*)E(\d*)', episode_number)
 
     # if not in S01E01 format, check if file is in yyyy-mm-dd format
     if not matched_season:
-        matched_season = re.search('(\d*)-(\d*)-(\d*)', filename_split[1])
+        matched_season = re.search('(\d*)-(\d*)-(\d*)', episode_number)
 
-    folder = ['/home', 'plex'] # TODO setup library path via config
-    folder.append(filename_split[0])
+    folder = config['PLEX_LIBRARY_FOLDER'] # TODO setup library path via config
+    folder.append(show_name)
     folder.append('Season {}'.format(matched_season[1]))
     folder.append(f.name)
 
@@ -186,9 +196,9 @@ def comcut_and_transcode(input_file, **kwargs):
     # transcode to h265
     cmd = [config['FFMPEG_BINARY_PATH']]
     for opt in config['FFMPEG_OPTIONS']:
-        if "{moved_filename}" in opt:
+        if "{input_filename}" in opt:
             # print(opt)
-            cmd.append(opt.format(moved_filename=moved_filename))
+            cmd.append(opt.format(input_filename=moved_filename))
         else:
             cmd.append(opt)
     cmd.append(out_filename)
