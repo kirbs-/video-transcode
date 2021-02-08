@@ -108,7 +108,7 @@ def translate_filenames(input_file):
     if not matched_season:
         matched_season = re.search('(\d*)-(\d*)-(\d*)', episode_number)
 
-    folder = config['PLEX_LIBRARY_FOLDER'] # TODO setup library path via config
+    folder = [config['PLEX_LIBRARY_FOLDER']] # TODO setup library path via config
     folder.append(show_name)
     folder.append('Season {}'.format(matched_season[1]))
     folder.append(f.name)
