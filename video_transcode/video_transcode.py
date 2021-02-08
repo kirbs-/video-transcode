@@ -91,7 +91,7 @@ def translate_filenames(input_file):
 
     # split filename into show - season/episode number (S01E01) - episode title parts
     filename_split = f.name.split(' - ')
-    print(filename_split)
+    # print(filename_split)
     
     show_name, episode_number, episode_name = filename_split
     if config['IGNORE_YEAR_IN_SHOW_NAME'] and re.search('\(\d+\)', show_name):
@@ -222,7 +222,7 @@ def comcut_and_transcode(input_file, **kwargs):
     # delete original file
     res_type = type(res)
     logging.info("FFMPEG command result type is: {}".format(res_type))
-    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and type(res) == str: 
+    if config['DELETE_SOURCE_AFTER_TRANSCODE'] and type(res) != int: 
         os.remove(moved_filename)
     elif res != 0:
         logging.info('Error processing file. Skipping source deletion.')
