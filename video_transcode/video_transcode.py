@@ -44,7 +44,7 @@ parser.add_argument("-a", "--action",
 parser.add_argument("-n", "--now",
                     action='store_true',
                     help="Run action now, don't schedule.")
-parser.add_argument("-2", "--same-folder",
+parser.add_argument("-s", "--same-dir",
                     action='store_true',
                     help="Run action now, don't schedule.")
 # parser.add_argument('--add',
@@ -90,7 +90,7 @@ def translate_filenames(input_file, same_folder):
     out_filename = os.path.splitext(input_filename)[0] + '.mkv'
 
     if same_folder:
-        return input_file, os.path.splittext(input_file)[0] + '.mkv'
+        return input_file, str(f.with_suffix('.mkv'))
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
@@ -270,12 +270,12 @@ def add_to_queue(filename, args):
 
         if args.now:
             comcut_and_transcode.apply_async(
-                (filename, args.same_folder), 
+                (filename, args.same_dir), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
         else:
             comcut_and_transcode.apply_async(
-                (filename, args.same_folder), 
+                (filename, args.same_dir), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 eta=schedule(duration),
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
