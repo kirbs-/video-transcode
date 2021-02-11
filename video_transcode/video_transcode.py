@@ -44,6 +44,9 @@ parser.add_argument("-a", "--action",
 parser.add_argument("-n", "--now",
                     action='store_true',
                     help="Run action now, don't schedule.")
+parser.add_argument("-2", "--same-folder",
+                    action='store_true',
+                    help="Run action now, don't schedule.")
 # parser.add_argument('--add',
 #                     action='store_true',
 #                     help="Add files to queue. This takes the first arguement as an input in to pathlib.Path.glob.")
@@ -66,7 +69,7 @@ app.conf.update(
 )
 
 
-def translate_filenames(input_file):
+def translate_filenames(input_file, same_folder):
     """Derives file path from video file's base name.
 
     Plex records shows in a temp location then moves the file into a libary upon completion. It's this 
@@ -85,6 +88,9 @@ def translate_filenames(input_file):
     input_filename = os.path.basename(input_file)
     # out_filename = input_filename.split('.')[0] + '.mkv'
     out_filename = os.path.splitext(input_filename)[0] + '.mkv'
+
+    if same_folder:
+        return input_file, os.path.splittext(input_file)[0] + '.mkv'
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
@@ -179,13 +185,13 @@ def schedule(duration):
 
 
 @app.task
-def comcut_and_transcode(input_file, **kwargs):
+def comcut_and_transcode(input_file, same_folder, **kwargs):
     """
     Passes input_file name from Plex to comcut then to ffmpeg.
     :param input_file:
     :return:
     """
-    out_filename, moved_filename = translate_filenames(input_file)
+    out_filename, moved_filename = translate_filenames(input_file, same_folder)
 
     # TODO check moved_filename exists here.
 
@@ -264,12 +270,12 @@ def add_to_queue(filename, args):
 
         if args.now:
             comcut_and_transcode.apply_async(
-                (filename,), 
+                (filename, args.same_folder), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
         else:
             comcut_and_transcode.apply_async(
-                (filename,), 
+                (filename, args.same_folder), 
                 {'vt_frame_size': frame_size, 'vt_duration': duration}, 
                 eta=schedule(duration),
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
