@@ -46,7 +46,7 @@ parser.add_argument("-n", "--now",
                     help="Run action now, don't schedule.")
 parser.add_argument("-s", "--same-dir",
                     action='store_true',
-                    help="Run action now, don't schedule.")
+                    help="Assume output file goes back to the input file's directory.")
 # parser.add_argument('--add',
 #                     action='store_true',
 #                     help="Add files to queue. This takes the first arguement as an input in to pathlib.Path.glob.")
@@ -90,7 +90,7 @@ def translate_filenames(input_file, same_folder):
     out_filename = os.path.splitext(input_filename)[0] + '.mkv'
 
     if same_folder:
-        return input_file, str(f.with_suffix('.mkv'))
+        return str(f.with_suffix('.mkv')), input_file
 
     # print(filename)
     logging.info("Input file: {}".format(input_file))
