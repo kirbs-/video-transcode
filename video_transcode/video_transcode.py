@@ -46,6 +46,7 @@ parser.add_argument("-n", "--now",
                     help="Run action now, don't schedule.")
 parser.add_argument("-s", "--same-dir",
                     action='store_true',
+                    default=False,
                     help="Assume output file goes back to the input file's directory.")
 # parser.add_argument('--add',
 #                     action='store_true',
