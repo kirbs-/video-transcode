@@ -43,6 +43,7 @@ parser.add_argument("-a", "--action",
                     default=config['DEFAULT_ACTION'])
 parser.add_argument("-n", "--now",
                     action='store_true',
+                    default=False,
                     help="Run action now, don't schedule.")
 parser.add_argument("-s", "--same-dir",
                     action='store_true',
@@ -142,9 +143,9 @@ def comcut(input_file):
 def run(cmd, env=None):
     """Utility to execute command on local OS."""
     try:
-        logging.info(' '.join(cmd))
+        logging.debug(' '.join(cmd))
         res = subprocess.check_output(cmd, stderr=subprocess.STDOUT, env=env)
-        logging.info(res)
+        logging.debug(res)
         return res
     except subprocess.CalledProcessError as e:
         logging.warn("Error running command.")
@@ -228,7 +229,7 @@ def comcut_and_transcode(input_file, same_folder, **kwargs):
 
     # delete original file
     res_type = type(res)
-    logging.info("FFMPEG command result type is: {}".format(res_type))
+    logging.debug("FFMPEG command result type is: {}".format(res_type))
     if config['DELETE_SOURCE_AFTER_TRANSCODE'] and type(res) != int: 
         os.remove(moved_filename)
     elif res != 0:
@@ -282,13 +283,28 @@ def add_to_queue(filename, args):
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 
+def list_tasks():
+    tasks =	inspect().scheduled()[config['CELERY_WORKER_NAME']]
+
+    for task in tasks:
+        logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args']))
+
+    logging.info("{} tasks in queue.".format(len(tasks)))
+
+
 def main():
     args = parser.parse_args()
 
     for f in args.filename:
         # convert file name to absolute path
-        filename = str(pathlib.Path(f).absolute())
-        add_to_queue(filename, args)
+        try:
+            filename = str(pathlib.Path(f).absolute())
+            add_to_queue(filename, args)
+        except FileNotFoundError:
+            logging.warn("No file found for {}".format(f))
+
+    if args.action == 'list-tasks':
+        list_tasks()
 
 
 if __name__ == '__main__':
