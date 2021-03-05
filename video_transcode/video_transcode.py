@@ -285,10 +285,8 @@ def add_to_queue(filename, args):
 
 def list_tasks():
     tasks =	inspect().scheduled()[config['CELERY_WORKER_NAME']]
-
     for task in tasks:
         logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args']))
-
     logging.info("{} tasks in queue.".format(len(tasks)))
 
 
