@@ -1,4 +1,5 @@
 # video-transcode
+
 Simplified commercial cutting and transcoding for Plex DVR. 
 
 video_transcode removes commercials and transcodes Plex recorded TV shows to smaller file. A 60 minute DVR show starting at ~5GB mpeg2 .ts file is reduced to a ~40-42 minute ~800MB h.265 .mkv file with little quality loss.
@@ -13,10 +14,12 @@ The service also supports Nvidia GPU transcoding, controls how intensive transco
 - Manual installation
 
 
-# Quickstart
+## Quickstart
+
 1. Install video_transcode with `pip install video_transcode`
 2. Create docker-compose.yaml
-    ```
+
+    ```docker
     version: '3'
     services:
         redis:
@@ -25,7 +28,7 @@ The service also supports Nvidia GPU transcoding, controls how intensive transco
             ports:
                 - "6124:6379"
         video:
-            image: k1rbs/video-transcode
+            image: kirb5/video-transcode
             restart: unless-stopped
             depends_on:
                 - "redis"
@@ -34,6 +37,7 @@ The service also supports Nvidia GPU transcoding, controls how intensive transco
                 - ./plex:/home/plex
 
     ```
+
 3. Start `docker-compose up`
 4. Add a video file to the transcoding queue with `video-transcode "MacGyver - S04E01 - Fire + Ashes + Legacy = Phoenix.ts"`
 
