@@ -293,6 +293,10 @@ def list_tasks():
 def main():
     args = parser.parse_args()
 
+    if args.filename == 'list-tasks':
+        list_tasks()
+        return
+
     for f in args.filename:
         # convert file name to absolute path
         try:
@@ -300,9 +304,6 @@ def main():
             add_to_queue(filename, args)
         except FileNotFoundError:
             logging.warn("No file found for {}".format(f))
-
-    if args.action == 'list-tasks':
-        list_tasks()
 
 
 if __name__ == '__main__':

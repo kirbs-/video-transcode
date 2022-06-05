@@ -13,7 +13,8 @@ RUN yum install -y argtable argtable-devel ffmpeg ffmpeg-devel git autoconf auto
 # build ffmpeg with cuda support
 RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
 RUN cd nv-codec-headers && make && make install && cd ../
-RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
+# RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
+RUN git clone --depth 1 --branch n4.4.2 https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig 
 RUN cd /opt/ffmpeg \ 
     && ./configure --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \

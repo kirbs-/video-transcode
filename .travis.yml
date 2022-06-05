@@ -10,10 +10,10 @@ before_install:
 script:
   - docker network create --driver bridge video-transcode-network
   - docker run -d --network video-transcode-network -p 6124:6379 redis:alpine 
-  - docker run -d -e CI=true --network video-transcode-network kirb5/video-transcode:gpu-dev
+  - docker run -d -e CI=true --network video-transcode-network kirb5/video-transcode:gpu-latest
   - docker ps -a
 
 after_success:
   - docker build -t kirb5/video-transcode:gpu-dev -f Dockerfile .
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
-  - docker push kirb5/video-transcode:gpu-dev
+  - docker push kirb5/video-transcode:gpu-latest
