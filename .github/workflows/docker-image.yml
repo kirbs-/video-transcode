@@ -26,6 +26,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: kirb5/video-transcode:$(date +%s)
+          tags: kirb5/video-transcode:gpu-build-latest
 
         
