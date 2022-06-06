@@ -4,7 +4,7 @@ RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
 RUN yum install -y epel-release
 RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
-RUN yum install -y argtable argtable-devel git autoconf automake yasm python3
+RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pkgconfig
 
 
 # install pyenv
@@ -14,16 +14,17 @@ RUN yum install -y argtable argtable-devel git autoconf automake yasm python3
 RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
 RUN cd nv-codec-headers && make && make install && cd ../
 # RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
-RUN git clone --depth 1 --branch n5.0.1 https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
+RUN git clone --depth 1 --branch n4.4.2 https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig 
 RUN cd /opt/ffmpeg \ 
     && ./configure --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \
     && make -j 10 \ 
+    && make install \ 
     && cd ../
-RUN ln -s /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
+# RUN ln -s /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
 
 # install comskip
-ENV PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
+# ENV PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
 RUN git clone https://github.com/erikkaashoek/Comskip.git /opt/Comskip
 RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 # RUN rm -rf Comskip
