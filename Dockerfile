@@ -23,6 +23,7 @@ RUN cd /opt/ffmpeg \
 RUN ln -s /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
 
 # install comskip
+ENV PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
 RUN git clone https://github.com/erikkaashoek/Comskip.git /opt/Comskip
 RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 # RUN rm -rf Comskip
