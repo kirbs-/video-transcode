@@ -4,7 +4,7 @@ RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
 RUN yum install -y epel-release
 RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
-RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pkgconfig
+RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pkgconfig zlib-devel libjpeg-turbo-devel python3-devel
 
 
 # install pyenv
