@@ -1,11 +1,11 @@
-FROM nvidia/cuda:11.2.0-devel-centos7 
+FROM nvidia/cuda:11.2.0-devel-centos7 AS build
 
 RUN yum update -y
 RUN yum groupinstall "Development Tools" -y
 RUN yum install -y epel-release
 RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
 RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pkgconfig zlib-devel libjpeg-turbo-devel python3-devel
-
+RUN yum clean all
 
 # install pyenv
 # RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv
@@ -13,19 +13,28 @@ RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pk
 # build ffmpeg with cuda support
 RUN git clone https://git.videolan.org/git/ffmpeg/nv-codec-headers.git
 RUN cd nv-codec-headers && make && make install && cd ../
-# RUN git clone https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
 RUN git clone --depth 1 --branch n4.4.2 https://git.ffmpeg.org/ffmpeg.git /opt/ffmpeg
+RUN mkdir /opt/build
 ENV PKG_CONFIG_PATH=/usr/local/lib/pkgconfig 
 RUN cd /opt/ffmpeg \ 
-    && ./configure --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \
+    && ./configure --prefix="/opt/build" --enable-cuda --enable-cuvid --enable-nvenc --enable-nonfree --enable-libnpp --extra-cflags=-I/usr/local/cuda/include --extra-ldflags=-L/usr/local/cuda/lib64 \
     && make -j 10 \ 
-    && make install \ 
-    && cd ../
-# RUN ln -s /opt/ffmpeg/ffmpeg /usr/local/bin/ffmpeg
+    && make install 
+
+FROM nvidia/cuda:11.2.0-base-centos7
+RUN yum update -y
+RUN yum groupinstall "Development Tools" -y
+RUN yum install -y epel-release
+RUN yum localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
+RUN yum install -y argtable argtable-devel git autoconf automake yasm python3 pkgconfig zlib-devel libjpeg-turbo-devel python3-devel
+
+RUN mkdir /opt/build
+COPY --from=build /usr/local/bin /usr/local/bin/
+COPY --from=build /opt/build /opt/build/
 
 # install comskip
-# ENV PKG_CONFIG_PATH=/opt/ffmpeg/lib/pkgconfig
-RUN git clone https://github.com/erikkaashoek/Comskip.git /opt/Comskip
+ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig
+RUN git clone --depth 1 https://github.com/erikkaashoek/Comskip.git /opt/Comskip
 RUN cd /opt/Comskip && bash autogen.sh && bash configure && make && make install
 # RUN rm -rf Comskip
 
