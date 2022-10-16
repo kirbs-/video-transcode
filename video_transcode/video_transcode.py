@@ -198,7 +198,7 @@ def comcut_and_transcode(input_file, same_folder, **kwargs):
     # TODO check moved_filename exists here.
 
     # cut commercials
-    cmd = [config['COMCUT_BINARY_PATH'], moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], f"--ffmpeg={config['FFMPEG_BINARY_PATH']}", moved_filename]
     res = run(cmd)
 
     # transcode to h265

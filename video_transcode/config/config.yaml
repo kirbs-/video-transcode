@@ -17,7 +17,7 @@ CELERY_WORKER_NAME: celery@brains
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
 
 # absolute path to ffmpeg binary
-FFMPEG_BINARY_PATH: /usr/local/bin/ffmpeg
+FFMPEG_BINARY_PATH: /opt/build/bin/ffmpeg
 
 # ffmpeg options; must include 'i {input_filename}'
 FFMPEG_OPTIONS:
