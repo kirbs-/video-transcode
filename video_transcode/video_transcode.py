@@ -128,7 +128,7 @@ def translate_filenames(input_file, same_folder):
     return out_filename, moved_filename
 
 
-@app.task
+@app.task(name='video_transcode.video_transcode.comcut')
 def comcut(input_file):
     """
     Passes input_file name from Plex to comcut.
@@ -162,7 +162,7 @@ def schedule(duration):
     c = inspect()
     tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
 
-    scheduled_task_duration = sum(map(lambda v: v['request']['kwargs']['vt_duration'], tasks))
+    scheduled_task_duration = sum(map(lambda v: v['request']['kwargs']['vt_duration'], tasks)) / config.get('ENCODING_SPEED_MULTIPLIER', 1)
 
     now = pendulum.now()
     window_start = now.replace(hour=config['SCHEDULE_START'], minute=0, second=0)
@@ -186,7 +186,7 @@ def schedule(duration):
             scheduled_task_duration -= window_size
 
 
-@app.task
+@app.task(name='video_transcode.video_transcode.comcut_and_transcode')
 def comcut_and_transcode(input_file, same_folder, **kwargs):
     """
     Passes input_file name from Plex to comcut then to ffmpeg.

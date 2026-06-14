@@ -42,3 +42,5 @@ SCHEDULE_START: 0
 SCHEDULE_END: 8
 # Consider year in show name when searching plex library
 IGNORE_YEAR_IN_SHOW_NAME: True
+# Multiplier to adjust the estimated duration of scheduled tasks, to account for faster or slower encoding speeds
+ENCODING_SPEED_MULTIPLIER: 1.0
