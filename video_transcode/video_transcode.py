@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('filename',
                     nargs='+')
 parser.add_argument("-a", "--action",
-                    help="ENVIRONMENT should be 'nonprod', 'dev' or 'sqa' and correspond to the AWS account to which you want to deploy.",
+                    help="Action to perform on video file. Options: comcut, transcode, comcut_and_transcode",
                     default=config['DEFAULT_ACTION'])
 parser.add_argument("-n", "--now",
                     action='store_true',
@@ -49,6 +49,10 @@ parser.add_argument("-s", "--same-dir",
                     action='store_true',
                     default=False,
                     help="Assume output file goes back to the input file's directory.")
+parser.add_argument('-l', '--list-tasks',
+                    action='store_true',
+                    default=False,
+                    help="List scheduled tasks in queue.")
 # parser.add_argument('--add',
 #                     action='store_true',
 #                     help="Add files to queue. This takes the first arguement as an input in to pathlib.Path.glob.")
@@ -126,6 +130,13 @@ def translate_filenames(input_file, same_folder):
     out_filename = os.path.splitext(moved_filename)[0] + '.mkv'
 
     return out_filename, moved_filename
+
+def list_scheduled_tasks():
+    c = inspect()
+    tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
+    for task in tasks:
+        logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args'][0]))
+    logging.info("{} tasks in queue.".format(len(tasks)))
 
 
 @app.task(name='video_transcode.video_transcode.comcut')
@@ -283,22 +294,25 @@ def add_to_queue(filename, args):
                 headers={'vt_frame_size': frame_size, 'vt_duration': duration})
 
 
-def list_tasks():
-    tasks =	inspect().scheduled()[config['CELERY_WORKER_NAME']]
-    for task in tasks:
-        logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args']))
-    logging.info("{} tasks in queue.".format(len(tasks)))
+# def list_tasks():
+#     tasks =	inspect().scheduled()[config['CELERY_WORKER_NAME']]
+#     for task in tasks:
+#         logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args']))
+#     logging.info("{} tasks in queue.".format(len(tasks)))
 
 
 def main():
     args = parser.parse_args()
 
-    if args.filename == 'list-tasks':
-        list_tasks()
+    if args.list_tasks:
+        list_scheduled_tasks()
         return
 
     for f in args.filename:
         # convert file name to absolute path
+        if "list-tasks" in f:
+            list_scheduled_tasks()
+            return
         try:
             filename = str(pathlib.Path(f).absolute())
             add_to_queue(filename, args)
