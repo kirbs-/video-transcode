@@ -1,0 +1,35 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Docker Image",
+            "type": "shell",
+            "command": "docker build ./ --platform linux/amd64 -t video-transcode:dev",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build Docker Image (no cache)",
+            "type": "shell",
+            "command": "docker build ./ --platform linux/amd64 -t video-transcode:dev --no-cache",
+            "problemMatcher": []
+        },
+        {
+            "label": "Tag Image",
+            "type": "shell",
+            "command": "docker tag video-transcode:dev kirb5/video-transcode:gpu-dev",
+            "problemMatcher": []
+        },
+        {
+            "label": "Push Image",
+            "type": "shell",
+            "command": "docker push kirb5/video-transcode:gpu-dev",
+            "problemMatcher": []
+        }
+    ]
+}

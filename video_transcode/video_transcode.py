@@ -311,15 +311,16 @@ def main():
         return
 
     for f in args.filename:
-        # convert file name to absolute path
         if "list-tasks" in f:
             list_scheduled_tasks()
             return
+        
         try:
+            # convert file name to absolute path
             filename = str(pathlib.Path(f).absolute())
             add_to_queue(filename, args)
         except FileNotFoundError:
-            logging.warn("No file found for {}".format(f))
+            logging.warning("No file found for {}".format(f))
 
 
 if __name__ == '__main__':

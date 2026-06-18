@@ -4,8 +4,8 @@ After=network.target
 
 [Service]
 Type=forking
-User=plex
-Group=plex
+User=celery
+Group=celery
 Environment=PATH=/home/kirby/.pyenv/versions/video-transcode/bin:/usr/local/bin:/usr/bin:$PATH
 EnvironmentFile=/opt/celery/video_transcode/config/celery.conf
 WorkingDirectory=/opt/celery
