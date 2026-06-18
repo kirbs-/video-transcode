@@ -22,34 +22,38 @@ RUN cd /opt/ffmpeg \
 
 FROM nvidia/cuda:13.0.3-runtime-rockylinux9
 RUN dnf update -y --allowerasing
-RUN dnf groupinstall "Development Tools" -y --nobest
-RUN dnf install -y dnf-plugins-core epel-release
-RUN dnf config-manager --set-enabled crb
+# RUN dnf groupinstall "Development Tools" -y --nobest --allowerasing
+# RUN dnf install -y dnf-plugins-core epel-release
+# RUN dnf config-manager --set-enabled crb
 # RUN dnf localinstall -y --nogpgcheck https://download1.rpmfusion.org/free/el/rpmfusion-free-release-7.noarch.rpm
-RUN dnf install -y git autoconf automake yasm pkgconfig zlib-devel libjpeg-turbo-devel openssl-devel wget libffi-devel langpacks-en glibc-all-langpacks
+RUN dnf install -y git autoconf automake pkgconfig langpacks-en wget make gcc g++ libtool xz-devel zlib-devel python3-pip
 
 # install python 3.9
-RUN wget https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz
-RUN tar xvf Python-3.9.10.tgz
-RUN cd Python-3.9*/ \ 
-    && bash configure \ 
-    && make altinstall
+# RUN wget https://www.python.org/ftp/python/3.9.10/Python-3.9.10.tgz
+# RUN tar xvf Python-3.9.10.tgz
+# RUN cd Python-3.9*/ \ 
+#     && bash configure \ 
+#     && make altinstall
 # RUN rm -rf Python-3.9*
 
 # copy ffmpeg built with NVENC
 RUN mkdir /opt/build
 COPY --from=build /usr/local/bin /usr/local/bin/
 COPY --from=build /opt/build /opt/build/
-RUN ln -s /opt/build/bin/ffmpeg /usr/local/bin/ffmpeg
+# RUN ln -s /opt/build/bin/ffmpeg /usr/local/bin/ffmpeg
+RUN cp /opt/build/bin/ffmpeg /usr/local/bin/ffmpeg
+
 
 # install comskip dependencies
 RUN wget http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz
 RUN tar -xvzf argtable2-13.tar.gz \
-    &&  cd argtable2-13 \
+    && cd argtable2-13 \
     && ./configure \
     && make \
-    &&  make install \
+    && make install \
+    && echo "/usr/local/lib" >> /etc/ld.so.conf.d/local.conf \
     && ldconfig
+
 # install comskip
 ENV PKG_CONFIG_PATH=/opt/build/lib/pkgconfig:/usr/local/lib/pkgconfig
 RUN git clone --depth 1 --branch ticks https://github.com/heitbaum/Comskip.git /opt/Comskip
@@ -69,7 +73,7 @@ ENV LC_ALL=en_US.utf-8
 ENV LANG=en_US.utf-8
 
 # install and configure video-transcode
-RUN pip3.9 install git+https://github.com/kirbs-/video-transcode.git --no-cache
+RUN pip3 install git+https://github.com/kirbs-/video-transcode.git --no-cache
 # RUN echo stuff
 COPY video_transcode/config /opt/video_transcode/config/.
 RUN mkdir /var/run/video_transcode
@@ -77,8 +81,15 @@ ENV VIDEO_TRANSCODE_CONFIG=/opt/video_transcode/config/config.yaml
 ENV VIDEO_TRANSCODE_MODE=CONTAINER
 ENV NVIDIA_DRIVER_CAPABILITIES=video,compute,utility
 
-RUN rm -rf Python-3.9*
+# RUN rm -rf Python-3.9*
 RUN cd /usr/local/cuda/lib64 && find . ! -name 'libnpp*' -type l -exec rm -f {} + && find . ! -name 'libnpp*' -type f -exec rm -f {} +
+
+# clean up
+RUN dnf remove gcc g++ git autoconf automake -y && dnf clean all && rm -rf /var/cache/dnf
+RUN rm -rf /opt/build
+RUN rm -rf /opt/Comskip
+RUN rm -rf /opt/comchap
+RUN rm -rf /argtable2-13
 
 COPY bootstrap.sh /usr/local/bin
 ENTRYPOINT ["bash", "bootstrap.sh"]
