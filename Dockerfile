@@ -91,5 +91,8 @@ RUN rm -rf /opt/Comskip
 RUN rm -rf /opt/comchap
 RUN rm -rf /argtable2-13
 
+# create celery user
+RUN useradd -M -s /usr/sbin/nologin celery
+
 COPY bootstrap.sh /usr/local/bin
 ENTRYPOINT ["bash", "bootstrap.sh"]

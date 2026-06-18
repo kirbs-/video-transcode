@@ -136,7 +136,9 @@ def list_scheduled_tasks():
     tasks = c.scheduled()[config['CELERY_WORKER_NAME']]
     for task in tasks:
         logging.info("Start time: {} | File: {}".format(task['eta'], task['request']['args'][0]))
+        print("Start time: {} | File: {}".format(task['eta'], task['request']['args'][0]))
     logging.info("{} tasks in queue.".format(len(tasks)))
+    print("{} tasks in queue.".format(len(tasks)))
 
 
 @app.task(name='video_transcode.video_transcode.comcut')
