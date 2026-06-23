@@ -12,7 +12,7 @@ import pathlib
 # import shlex
 import re
 import yaml
-import pkg_resources
+import importlib.resources as resources
 import argparse
 import logging
 
@@ -25,7 +25,8 @@ logging.basicConfig(level=logging.WARN)
 if os.environ.get('VIDEO_TRANSCODE_CONFIG'):
     CONFIG_FILE = os.environ.get('VIDEO_TRANSCODE_CONFIG')
 else:
-    CONFIG_FILE = pkg_resources.resource_filename('video_transcode','config/config.yaml')
+    with resources.path('video_transcode', 'config/config.yaml') as p:
+        CONFIG_FILE = str(p)
 
 with open(CONFIG_FILE) as f:
     config = yaml.full_load(f.read())
