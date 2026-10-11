@@ -150,7 +150,7 @@ def comcut(input_file):
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = [config['COMCUT_BINARY_PATH'], '--ffmpeg=/bin/ffmpeg', moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'],'--comskip-ini={}'.format(config['COMSKIP_INI_PATH']), '--ffmpeg=/bin/ffmpeg', moved_filename]
     res = run(cmd)
 
 

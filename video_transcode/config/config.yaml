@@ -13,6 +13,9 @@ PLEX_LIBRARY_FOLDER: /home/plex
 CELERY_QUEUE: video_transcode      
 CELERY_WORKER_NAME: celery@brains
 
+# absolute path to comskip.ini file
+COMSKIP_INI_PATH: /opt/video_transcode/config/comskip.ini
+
 # absolute path to comcut binary
 COMCUT_BINARY_PATH: /usr/local/bin/comcut
 
