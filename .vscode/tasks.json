@@ -30,6 +30,11 @@
             "type": "shell",
             "command": "docker push kirb5/video-transcode:gpu-dev",
             "problemMatcher": []
+        },
+        {
+            "label": "Build PyInstaller Executable",
+            "type": "shell",
+            "command": "pyinstaller video_transcode/video_transcode.py -F --collect-all celery --hidden-import kombu.transport.redis"
         }
     ]
 }
