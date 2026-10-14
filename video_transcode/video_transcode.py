@@ -150,7 +150,7 @@ def comcut(input_file):
     :return:
     """
     out_filename, moved_filename = translate_filenames(input_file)
-    cmd = [config['COMCUT_BINARY_PATH'],'--comskip-ini={}'.format(config['COMSKIP_INI_PATH']), '--ffmpeg=/bin/ffmpeg', moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'],f'--comskip-ini={config["COMSKIP_INI_PATH"]}', f"--ffmpeg={config['FFMPEG_BINARY_PATH']}", moved_filename]
     res = run(cmd)
 
 
@@ -212,7 +212,7 @@ def comcut_and_transcode(input_file, same_folder, **kwargs):
     # TODO check moved_filename exists here.
 
     # cut commercials
-    cmd = [config['COMCUT_BINARY_PATH'], f"--ffmpeg={config['FFMPEG_BINARY_PATH']}", moved_filename]
+    cmd = [config['COMCUT_BINARY_PATH'], f'--comskip-ini={config["COMSKIP_INI_PATH"]}', f"--ffmpeg={config['FFMPEG_BINARY_PATH']}", moved_filename]
     res = run(cmd)
 
     # transcode to h265
